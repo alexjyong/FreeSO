@@ -1,17 +1,20 @@
-# FreeSO Docker Deployment
+# FreeSO Docker Directory
 
-This directory contains Docker configuration files for deploying the FreeSO server in containerized environments.
+This directory contains all Docker-related files for the FreeSO server deployment.
 
 ## Files Overview
 
-- `Dockerfile` - Development Dockerfile that attempts to build from source
-- `Dockerfile.prod` - Production-ready Dockerfile for pre-built binaries
-- `docker-compose.yml` - Development compose file
-- `docker-compose.prod.yml` - Production compose file with security enhancements
-- `build-for-docker.sh` - Script to build the application for Docker deployment
-- `DOCKER_SETUP.md` - Complete setup and deployment documentation
+- `Dockerfile.prod` - Production-ready Dockerfile for building the FreeSO server
+- `docker-compose.yml` - Development Docker Compose configuration
+- `docker-compose.prod.yml` - Production Docker Compose configuration
+- `build-for-docker.sh` - Script to build the FreeSO application for Docker deployment
+- `setup-config.sh` - Script to generate configuration files
+- `deploy-prod.sh` - Production deployment script
+- `monitor.sh` - Server monitoring script
+- `backup.sh` - Backup automation script
+- `README.md` - This documentation file
 
-## Quick Start
+## Usage
 
 ### For Development:
 ```bash
@@ -19,54 +22,27 @@ docker-compose up -d
 ```
 
 ### For Production:
-1. Build the application:
-   ```bash
-   chmod +x build-for-docker.sh
-   ./build-for-docker.sh
-   ```
-   This will create the necessary files in the `publish` directory.
+```bash
+# Build the application
+chmod +x build-for-docker.sh
+./build-for-docker.sh
 
-2. Set up secrets:
-   ```bash
-   mkdir -p secrets
-   echo "your_secure_password" > secrets/db_root_password.txt
-   echo "your_secure_password" > secrets/db_password.txt
-   ```
+# Configure the server (choose one approach)
+# Option 1: Automated setup (recommended)
+chmod +x setup-config.sh
+./setup-config.sh
 
-3. Deploy:
-   ```bash
-   docker-compose -f docker-compose.prod.yml up -d
-   ```
+# Option 2: Manual configuration
+cp ../TSOClient/FSO.Server/config.sample.json config.json
+# Edit config.json to match your production settings
 
-## Prerequisites
+# Deploy with production compose
+docker-compose -f docker-compose.prod.yml up -d
+```
 
-- Docker Engine 20.10+
-- Docker Compose v2+
-- Original The Sims Online game files
-- At least 4GB RAM allocated to Docker
+## Important Notes
 
-## Configuration
-
-The server requires The Sims Online game files to function. Mount them using the `GAME_FILES_PATH` environment variable or by mounting to `/game` in the container.
-
-Configuration is done via `config.json` which should be mapped to `/app/config.json` in the container.
-
-## Ports
-
-- 9000: API server
-- 33100: City server
-- 34100: Lot server
-- 35100: Task server
-
-## Volumes
-
-- `/game`: Read-only mount for TSO game files
-- `/nfs`: Persistent storage for lot/object saves
-
-## Security
-
-The production setup includes:
-- Non-root user execution
-- Secrets management
-- Resource limits
-- Network isolation
+- All Docker-related files have been consolidated in this directory for better organization
+- The main documentation files have been updated to reference these correct paths
+- Scripts should be run from the project root directory (one level up from this directory)
+- Configuration files should still be placed in the project root as the Docker volumes mount from there

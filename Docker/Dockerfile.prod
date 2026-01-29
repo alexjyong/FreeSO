@@ -13,6 +13,11 @@ RUN mkdir -p /game /nfs
 # Copy the built application (from build step)
 COPY publish/ .
 
+# Copy configuration files that are needed at runtime
+COPY TSOClient/FSO.Server/NLog.config ./
+COPY TSOClient/FSO.Server.Api.Core/appsettings.json ./
+COPY TSOClient/FSO.Server.Api.Core/appsettings.Development.json ./
+
 # Set up volumes for game files and NFS data
 VOLUME ["/game", "/nfs"]
 

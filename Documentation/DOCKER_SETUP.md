@@ -31,15 +31,25 @@ cd FreeSO
 
 ### 3. Configure the Server
 
-1. Copy the sample configuration:
-   ```bash
-   cp TSOClient/FSO.Server/config.sample.json config.json
-   ```
+You have two options for configuring the server:
 
-2. Edit `config.json` to match your setup:
-   - Set `"gameLocation"` to `"./game/"` (this will map to the container's `/game`)
-   - Set `"simNFS"` to `"./nfs"` (this will map to the container's `/nfs`)
-   - Update database connection string to use `"database=fso;server=database;uid=fsoserver;pwd=password;"`
+**Option 1: Use the automated setup script (Recommended)**
+   ```bash
+   chmod +x Docker/setup-config.sh
+   ./Docker/setup-config.sh
+   ```
+   This script will automatically create and configure the config.json file for you.
+
+**Option 2: Manual configuration**
+   1. Copy the sample configuration:
+      ```bash
+      cp TSOClient/FSO.Server/config.sample.json config.json
+      ```
+
+   2. Edit `config.json` to match your setup:
+      - Set `"gameLocation"` to `"./game/"` (this will map to the container's `/game`)
+      - Set `"simNFS"` to `"./nfs"` (this will map to the container's `/nfs`)
+      - Update database connection string to use `"database=fso;server=database;uid=fsoserver;pwd=password;"`
 
 ### 4. Set Up Environment Variables
 
@@ -75,6 +85,26 @@ docker compose up -d
 The server will start and automatically initialize the database.
 
 ## Configuration Details
+
+### Main Configuration File
+
+The FreeSO server expects the `config.json` file to be in the same directory as the server binaries. In the Docker container, this is `/app/` directory.
+
+The docker-compose file correctly mounts the main configuration file to this location:
+
+```yaml
+volumes:
+  # Mount main configuration file to the correct location
+  - ./config.json:/app/config.json:ro
+```
+
+### Additional Configuration Files
+
+The Docker image also includes other necessary configuration files:
+- `NLog.config` - Logging configuration
+- `appsettings.json` and `appsettings.Development.json` - API server settings
+
+These are copied during the Docker build process to ensure the server has all required configuration files.
 
 ### Database Configuration
 
@@ -137,8 +167,8 @@ For production deployments, use the following build process:
 
 1. Build the application on your host system:
    ```bash
-   chmod +x build-for-docker.sh
-   ./build-for-docker.sh
+   chmod +x Docker/build-for-docker.sh
+   ./Docker/build-for-docker.sh
    ```
 
 2. Create secrets directory and files:
@@ -154,9 +184,9 @@ For production deployments, use the following build process:
    # Edit config.json to match your production settings
    ```
 
-4. Deploy with production compose file:
+4. Deploy with production compose file (located in Docker/ directory):
    ```bash
-   docker-compose -f docker-compose.prod.yml up -d
+   docker-compose -f Docker/docker-compose.prod.yml up -d
    ```
 
 ### Production Security
@@ -193,9 +223,9 @@ Example backup script:
 docker exec freesodb-prod mysqldump -u fsoserver -p$(cat secrets/db_password.txt) fso > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # NFS data backup (stop the server first)
-docker-compose -f docker-compose.prod.yml stop server
+docker-compose -f Docker/docker-compose.prod.yml stop server
 tar -czf nfs_backup_$(date +%Y%m%d_%H%M%S).tar.gz -C /path/to/nfs/data .
-docker-compose -f docker-compose.prod.yml start server
+docker-compose -f Docker/docker-compose.prod.yml start server
 ```
 
 ### Scaling Considerations

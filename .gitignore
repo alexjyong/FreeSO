@@ -17,11 +17,17 @@ obj/
 [Rr]elease*/
 TSOClient/TSOClient/Content/obj/x86/Debug/ContentPipeline.xml
 pdclient/
+# Build outputs
 publish/
+TSOClient/FSO.Server.Core/bin/
+TSOClient/FSO.Server.Core/obj/
+TSOClient/FSO.Server.Api.Core/bin/
+TSOClient/FSO.Server.Api.Core/obj/
 TSOClient/FSO.Benchmark/*
 TSOClient/.vs/*
 # User-specific files
 .vs/
+config.json
 TSOClient/FSO.Server/config.json
 *.suo
 *.user

@@ -60,19 +60,19 @@ echo "your_secure_user_password" > secrets/db_password.txt
 ### 5. Deploy the Services
 ```bash
 # Make the deployment script executable
-chmod +x deploy-prod.sh
+chmod +x Docker/deploy-prod.sh
 
 # Run the deployment
-./deploy-prod.sh
+./Docker/deploy-prod.sh
 ```
 
 ### 6. Verify the Deployment
 ```bash
 # Check service status
-docker-compose -f docker-compose.prod.yml ps
+docker-compose -f Docker/docker-compose.prod.yml ps
 
 # Check logs
-docker-compose -f docker-compose.prod.yml logs server
+docker-compose -f Docker/docker-compose.prod.yml logs server
 ```
 
 ## Production Operations

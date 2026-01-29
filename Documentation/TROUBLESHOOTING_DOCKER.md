@@ -119,17 +119,43 @@ This guide provides solutions for common issues when running FreeSO in Docker co
    docker stats freesoserver-prod
    ```
 
+### 8. Configuration Issues
+
+**Problem**: Server fails to start due to missing or incorrect configuration
+**Symptoms**:
+- Error messages about missing config.json
+- Server exits immediately after startup
+- Configuration validation errors
+
+**Solutions**:
+1. Use the automated setup script (recommended):
+   ```bash
+   chmod +x Docker/setup-config.sh
+   ./Docker/setup-config.sh
+   ```
+
+2. Or manually create the configuration:
+   ```bash
+   cp TSOClient/FSO.Server/config.sample.json config.json
+   # Edit config.json to match your environment
+   ```
+
+3. Verify the configuration file exists and has proper permissions:
+   ```bash
+   docker-compose -f Docker/docker-compose.prod.yml exec server ls -la /app/config.json
+   ```
+
 ## Diagnostic Commands
 
 ### Check Overall System Status
 ```bash
-docker-compose -f docker-compose.prod.yml ps
+docker-compose -f Docker/docker-compose.prod.yml ps
 ```
 
 ### View Recent Logs
 ```bash
-docker-compose -f docker-compose.prod.yml logs --tail=50 server
-docker-compose -f docker-compose.prod.yml logs --tail=50 database
+docker-compose -f Docker/docker-compose.prod.yml logs --tail=50 server
+docker-compose -f Docker/docker-compose.prod.yml logs --tail=50 database
 ```
 
 ### Check Resource Usage
@@ -139,17 +165,17 @@ docker stats --no-stream
 
 ### Connect to Server Container
 ```bash
-docker-compose -f docker-compose.prod.yml exec server bash
+docker-compose -f Docker/docker-compose.prod.yml exec server bash
 ```
 
 ### Connect to Database
 ```bash
-docker-compose -f docker-compose.prod.yml exec database mysql -u fsoserver -ppassword fso
+docker-compose -f Docker/docker-compose.prod.yml exec database mysql -u fsoserver -ppassword fso
 ```
 
 ### Test Database Connectivity from Server
 ```bash
-docker-compose -f docker-compose.prod.yml exec server nc -zv database 3306
+docker-compose -f Docker/docker-compose.prod.yml exec server nc -zv database 3306
 ```
 
 ## Performance Tuning
