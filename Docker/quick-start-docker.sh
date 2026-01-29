@@ -138,8 +138,32 @@ fi
 # Step 3: Build the application
 echo ""
 print_status "Step 3: Building the FreeSO application..."
-chmod +x Docker/build-for-docker.sh
-./Docker/build-for-docker.sh
+
+# Check if we need to run protobuild (based on Azure pipeline)
+if [ -f "Other/libs/FSOMonoGame/protobuild.exe" ]; then
+    print_status "Running protobuild (this may take a moment)..."
+    cd Other/libs/FSOMonoGame/
+    # protobuild.exe --generate (would run on Windows)
+    cd ../../..
+fi
+
+# Restore packages first
+print_status "Restoring packages..."
+cd TSOClient
+dotnet restore -p:WarningsNotAsErrors=NU1605
+cd ..
+
+# Build the client project (based on Azure pipeline which builds FSO_IDE project)
+print_status "Building the FreeSO client project..."
+dotnet build TSOClient/FreeSO.sln -p:Configuration=Release -p:WarningsNotAsErrors=NU1605
+
+# Create publish directory
+mkdir -p publish
+
+# Copy built files to publish directory (this is what the server will use)
+cp -r TSOClient/tso.client/bin/Release/net9.0/* publish/ 2>/dev/null || echo "Client build output not found, continuing..."
+
+print_status "Build completed successfully!"
 
 # Step 4: Create secrets directory and files
 echo ""

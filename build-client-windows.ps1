@@ -78,9 +78,10 @@ if ($Clean) {
 if (-not $SkipRestore) {
     Write-Host ""
     Write-Host "Restoring dependencies..." -ForegroundColor Cyan
-    dotnet restore TSOClient\FSO.Server.Core\FSO.Server.Core.sln -p:WarningsNotAsErrors=NU1605
+    # Restore dependencies for the client project specifically
+    dotnet restore TSOClient\tso.client\TSOClient.csproj -p:WarningsNotAsErrors=NU1605
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "ERROR: Failed to restore dependencies" -ForegroundColor Red
+        Write-Host "ERROR: Failed to restore dependencies for client" -ForegroundColor Red
         exit 1
     }
     Write-Host "Dependencies restored!" -ForegroundColor Green
@@ -88,16 +89,18 @@ if (-not $SkipRestore) {
 
 Write-Host ""
 Write-Host "Building FreeSO Client ($Configuration)..." -ForegroundColor Cyan
-dotnet build TSOClient\FSO.Server.Core\FSO.Server.Core.sln -c $Configuration --no-restore -p:WarningsNotAsErrors=NU1605
+# Build the client project specifically, not the server
+dotnet build TSOClient\tso.client\TSOClient.csproj -c $Configuration --no-restore -p:WarningsNotAsErrors=NU1605
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Build failed" -ForegroundColor Red
+    Write-Host "ERROR: Client build failed" -ForegroundColor Red
     exit 1
 }
 
 if ($Publish) {
     Write-Host ""
     Write-Host "Publishing FreeSO Client..." -ForegroundColor Cyan
-    dotnet publish TSOClient\FSO.Server.Core\FSO.Server.Core.sln -c $Configuration -r win-x64 --self-contained false --no-build -p:WarningsNotAsErrors=NU1605 -o ..\..\publish
+    # Publish the client project specifically
+    dotnet publish TSOClient\tso.client\TSOClient.csproj -c $Configuration -r win-x64 --self-contained false --no-build -p:WarningsNotAsErrors=NU1605 -o publish
     if ($LASTEXITCODE -ne 0) {
         Write-Host "ERROR: Publish failed" -ForegroundColor Red
         exit 1

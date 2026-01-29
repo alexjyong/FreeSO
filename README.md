@@ -41,9 +41,32 @@ You can contribute to FreeSO by testing cutting edge features in the latest rele
 
 Looking for something to do? Check out the issues tagged as [help wanted](https://github.com/riperiperi/FreeSO/labels/help%20wanted) to get started.
 
+## Quick Start with Docker (Recommended for New Users)
+
+For an automated setup that handles everything from building to deployment, use the quick start script:
+
+```bash
+# Make the script executable
+chmod +x Docker/quick-start-docker.sh
+
+# Run the automated setup
+./Docker/quick-start-docker.sh
+```
+
+This script will:
+- Check all prerequisites
+- Build the FreeSO application
+- Generate configuration files
+- Create necessary secrets
+- Set up environment variables
+- Start the Docker services
+- Verify that everything is running correctly
+
 ## Prerequisites
-* [Visual Studio 2019](https://visualstudio.microsoft.com/vs/)
+* [Visual Studio 2019](https://visualstudio.microsoft.com/vs/) or .NET SDK 9.0
 * [MonoGame](http://www.monogame.net): 3.5 for the iOS and Android VS2015 project types. (optional)
+* [Docker Engine](https://docs.docker.com/get-docker/) (if using Docker deployment)
+* [Docker Compose](https://docs.docker.com/compose/install/) (if using Docker deployment)
 
 # License
 > This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
