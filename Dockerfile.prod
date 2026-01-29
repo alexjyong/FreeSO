@@ -1,0 +1,31 @@
+FROM mcr.microsoft.com/dotnet/runtime:9.0 AS runtime
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    libc6-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create required directories
+RUN mkdir -p /game /nfs
+
+# Copy the built application (from build step)
+COPY publish/ .
+
+# Set up volumes for game files and NFS data
+VOLUME ["/game", "/nfs"]
+
+# Create a non-root user for security
+RUN groupadd -r fso && useradd -r -u 1001 -g fso fso
+USER fso
+
+# Expose ports used by FreeSO server
+EXPOSE 9000 33100 34100 35100
+
+# Health check - check if the main DLL exists
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+  CMD test -f FSO.Server.Core.dll || exit 1
+
+# Entry point - run the server
+ENTRYPOINT ["dotnet", "FSO.Server.Core.dll"]

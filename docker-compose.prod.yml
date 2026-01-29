@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # MariaDB database service
+  database:
+    image: mariadb:10.5
+    container_name: freesodb-prod
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-fso}
+      MYSQL_USER: ${MYSQL_USER:-fsoserver}
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - freesonet
+    restart: unless-stopped
+    secrets:
+      - db_root_password
+      - db_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+
+  # FreeSO Server
+  server:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.prod
+    container_name: freesoserver-prod
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      # API server
+      - "${API_PORT:-9000}:9000"
+      # City server (example - adjust as needed)
+      - "${CITY_PORT:-33100}:33100"
+      # Lot server (example - adjust as needed)
+      - "${LOT_PORT:-34100}:34100"
+      # Task server (example - adjust as needed)
+      - "${TASK_PORT:-35100}:35100"
+    environment:
+      - DB_HOST=database
+      - DB_NAME=${MYSQL_DATABASE:-fso}
+      - DB_USER=${MYSQL_USER:-fsoserver}
+      - DB_PASS_FILE=/run/secrets/db_password
+    volumes:
+      # Mount game files directory (must be provided separately)
+      - ${GAME_FILES_PATH:-./game}:/game:ro
+      # Mount NFS directory for lot/object saves
+      - nfs_data:/nfs
+      # Mount configuration file
+      - ./config.json:/app/config.json:ro
+    networks:
+      - freesonet
+    restart: unless-stopped
+    secrets:
+      - db_password
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD", "test", "-f", "/app/FSO.Server.Core.dll"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: >
+      sh -c "
+        # Wait for database to be ready
+        until nc -z database 3306; do
+          sleep 1
+        done
+        # Initialize database if needed
+        dotnet FSO.Server.Core.dll db-init || echo 'Database initialization completed or skipped'
+        # Start the server
+        dotnet FSO.Server.Core.dll
+      "
+
+networks:
+  freesonet:
+    driver: bridge
+
+volumes:
+  db_data:
+  nfs_data:
+
+secrets:
+  db_root_password:
+    file: ./secrets/db_root_password.txt
+  db_password:
+    file: ./secrets/db_password.txt

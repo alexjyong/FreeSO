@@ -12,6 +12,8 @@
     <PublishTrimmed>true</PublishTrimmed>
     <IsAotCompatible>false</IsAotCompatible>
     <TrimMode>full</TrimMode>
+    <!-- Disable package downgrade warnings -->
+    <WarningsNotAsErrors>NU1605</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
