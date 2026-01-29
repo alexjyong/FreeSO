@@ -27,13 +27,36 @@ cd FreeSO
 
 1. Download The Sims Online game files from archive.org
 2. Extract them to a local directory (e.g., `./game`)
-3. Ensure the directory contains files like `tuning.dat`, `TSOClient`, etc.
+3. Ensure the directory contains the required files:
+   - `tuning.dat` (or `tuning.xml`)
+   - `TSOClient/` directory with subdirectories
+   - `TSOClient.exe` (or equivalent client executable)
+   - `TSOClient/Content/Objects/objects.dat` (recommended)
+4. The quick start script will validate these files before proceeding
 
-### 3. Configure the Server
+### 3. Automated Setup (Recommended for Quick Start)
 
-You have two options for configuring the server:
+For a completely automated setup that handles everything from building to deployment, use the quick start script:
 
-**Option 1: Use the automated setup script (Recommended)**
+```bash
+chmod +x Docker/quick-start-docker.sh
+./Docker/quick-start-docker.sh
+```
+
+This script will:
+- Check all prerequisites
+- Build the FreeSO application
+- Generate configuration files
+- Create necessary secrets
+- Set up environment variables
+- Start the Docker services
+- Verify that everything is running correctly
+
+### 4. Manual Configuration (Alternative Method)
+
+If you prefer to configure manually, you have two options:
+
+**Option 1: Use the automated setup script**
    ```bash
    chmod +x Docker/setup-config.sh
    ./Docker/setup-config.sh

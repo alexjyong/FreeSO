@@ -16,6 +16,23 @@ This directory contains all Docker-related files for the FreeSO server deploymen
 
 ## Usage
 
+### Quick Start (Recommended for New Users)
+For a completely automated setup that handles everything from building to deployment:
+```bash
+chmod +x quick-start-docker.sh
+./quick-start-docker.sh
+```
+
+This script will:
+- Check all prerequisites
+- Validate the presence of required TSO game files
+- Build the FreeSO application
+- Generate configuration files
+- Create necessary secrets
+- Set up environment variables
+- Start the Docker services
+- Verify that everything is running correctly
+
 ### For Development:
 ```bash
 docker-compose up -d
@@ -39,6 +56,16 @@ cp ../TSOClient/FSO.Server/config.sample.json config.json
 # Deploy with production compose
 docker-compose -f docker-compose.prod.yml up -d
 ```
+
+### Quick Start Script Features
+The `quick-start-docker.sh` script provides:
+- Prerequisite checking (Docker, .NET SDK, etc.)
+- Automatic application building
+- Configuration generation with sensible defaults
+- Secure secret generation
+- Environment setup
+- Service startup and validation
+- Status reporting throughout the process
 
 ## Important Notes
 
