@@ -66,15 +66,29 @@ dotnet build -c Release -p:WarningsNotAsErrors=NU1605
 
 ### 1. Prepare Game Files
 
-The FreeSO client requires original The Sims Online game files:
+The FreeSO client requires original The Sims Online game files. The client searches for these files in specific locations:
 
+#### Default Search Locations
+The client searches for game files in this order:
+1. `../The Sims Online/TSOClient/` (relative to the client executable)
+2. `game/TSOClient/` (for Linux systems)
+3. Windows registry location: `C:\Program Files\Maxis\The Sims Online\TSOClient\`
+
+#### Required Game Files
+The client verifies the game installation by looking for `tuning.dat` in the game directory.
+
+#### Setting Up Game Files
 1. Download The Sims Online game files from archive.org
-2. Extract them to a directory (e.g., `./game`)
-3. Ensure the directory contains:
-   - `tuning.dat` (or `tuning.xml`)
-   - `TSOClient/` directory with subdirectories
-   - `TSOClient.exe` (or equivalent client executable)
-   - `UserData/` directory (if available)
+2. Extract them to one of the default locations above, OR
+3. Set the `StartupPath` in `config.ini` to point to your game directory
+
+For Docker deployments, the game files should be mounted to `/game` in the container, and the `gameLocation` in the server's `config.json` should be set to `"./game/"`.
+
+For local client development, place your game files in a `game/` directory relative to the client executable, ensuring:
+- `game/tuning.dat` exists
+- `game/TSOClient/` directory with subdirectories exists
+- `game/TSOClient.exe` (or equivalent) exists
+- Other required TSO files exist in the game directory
 
 ### 2. Client Configuration vs. Server Configuration
 
@@ -145,9 +159,6 @@ To simplify the build process, we provide automated build scripts for both Windo
 Use the PowerShell script to automate the entire build process:
 
 ```powershell
-# Make the script executable
-chmod +x Docker/build-client-windows.ps1
-
 # Run the build script
 ./Docker/build-client-windows.ps1
 

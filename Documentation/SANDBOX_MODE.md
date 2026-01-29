@@ -53,6 +53,14 @@ Sandbox mode can also be enabled programmatically by launching the client with s
 - VM state inspection
 - Performance profiling tools
 
+### 5. Game Files Requirement
+Even in sandbox mode, the FreeSO client still requires the original TSO game files to function. The client will look for these files in the locations specified by the `StartupPath` in the configuration or in the default search locations:
+- `../The Sims Online/TSOClient/` (relative to the client executable)
+- `game/TSOClient/` (for Linux systems)
+- Windows registry location: `C:\Program Files\Maxis\The Sims Online\TSOClient\`
+
+The client specifically looks for `tuning.dat` to verify the game installation.
+
 ## Limitations of Sandbox Mode
 
 While sandbox mode is useful for development and testing, it has limitations compared to the full multiplayer experience:

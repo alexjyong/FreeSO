@@ -47,11 +47,13 @@ If you're using Server Mode:
 1. Download The Sims Online game files from archive.org
 2. Extract them to a local directory (e.g., `./game`)
 3. Ensure the directory contains the required files:
-   - `tuning.dat` (or `tuning.xml`)
+   - `tuning.dat` (critical file - the client verifies this exists)
    - `TSOClient/` directory with subdirectories
-   - `TSOClient.exe` (or equivalent client executable)
+   - `TSOClient.exe` or equivalent client executable
    - `TSOClient/Content/Objects/objects.dat` (recommended)
-4. The quick start script will validate these files before proceeding
+4. The Docker setup will mount this directory to `/game` in the server container
+5. The server's `config.json` file should reference this location as `"./game/"` for the `gameLocation` setting
+6. The quick start script will validate these files before proceeding
 
 ### 4. Automated Setup (Recommended for Quick Start)
 
