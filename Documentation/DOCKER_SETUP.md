@@ -23,7 +23,26 @@ git clone https://github.com/riperiperi/FreeSO.git
 cd FreeSO
 ```
 
-### 2. Prepare Game Files
+### 2. Choose Your Deployment Mode
+
+FreeSO offers two main deployment modes:
+
+#### Server Mode (Full Multiplayer Experience)
+- Full multiplayer functionality with other players
+- Requires complete Docker setup with database and networking
+- Recommended for production servers or multiplayer experiences
+- Requires original TSO game files
+
+#### Sandbox Mode (Local Development/Testing)
+- Local-only game experience without server dependencies
+- Ideal for development, testing, and offline play
+- No database or networking required
+- Still requires original TSO game files for core functionality
+- Access through the client's "Sandbox Mode" option
+
+### 3. Prepare Game Files (For Server Mode Only)
+
+If you're using Server Mode:
 
 1. Download The Sims Online game files from archive.org
 2. Extract them to a local directory (e.g., `./game`)
@@ -34,7 +53,7 @@ cd FreeSO
    - `TSOClient/Content/Objects/objects.dat` (recommended)
 4. The quick start script will validate these files before proceeding
 
-### 3. Automated Setup (Recommended for Quick Start)
+### 4. Automated Setup (Recommended for Quick Start)
 
 For a completely automated setup that handles everything from building to deployment, use the quick start script:
 
@@ -52,7 +71,9 @@ This script will:
 - Start the Docker services
 - Verify that everything is running correctly
 
-### 4. Manual Configuration (Alternative Method)
+**Note**: This script sets up the full server mode. For sandbox mode, simply launch the client and select "Sandbox Mode" from the main menu.
+
+### 5. Manual Configuration (Alternative Method)
 
 If you prefer to configure manually, you have two options:
 
@@ -128,6 +149,14 @@ The Docker image also includes other necessary configuration files:
 - `appsettings.json` and `appsettings.Development.json` - API server settings
 
 These are copied during the Docker build process to ensure the server has all required configuration files.
+
+### Client Configuration
+
+For information on configuring the FreeSO client to connect to your server, see the [Client Build Guide](CLIENT_BUILD.md). The client configuration involves:
+
+- Setting up server endpoints in the client configuration
+- Ensuring the client has access to original TSO game files
+- Configuring authentication and connection settings
 
 ### Database Configuration
 

@@ -145,6 +145,25 @@ This guide provides solutions for common issues when running FreeSO in Docker co
    docker-compose -f Docker/docker-compose.prod.yml exec server ls -la /app/config.json
    ```
 
+### 9. Sandbox Mode Requirements
+
+**Problem**: Sandbox mode fails to start or reports missing files
+**Symptoms**:
+- Error messages about missing game assets
+- Sandbox mode fails to initialize
+- Missing textures or objects in sandbox mode
+
+**Solutions**:
+1. Note that sandbox mode still requires original TSO game files:
+   ```bash
+   # Ensure game files are available in the expected location
+   ls -la ./game/
+   # Should contain tuning.dat, TSOClient/, etc.
+   ```
+
+2. The game files are still required for core functionality even in sandbox mode
+3. Make sure the gameLocation in config.json matches where your game files are mounted
+
 ## Diagnostic Commands
 
 ### Check Overall System Status

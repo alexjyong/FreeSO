@@ -12,6 +12,9 @@ This directory contains all Docker-related files for the FreeSO server deploymen
 - `deploy-prod.sh` - Production deployment script
 - `monitor.sh` - Server monitoring script
 - `backup.sh` - Backup automation script
+- `quick-start-docker.sh` - Complete automated setup script
+- `build-client-windows.ps1` - Automated client build script for Windows
+- `build-client-linux.sh` - Automated client build script for Linux
 - `README.md` - This documentation file
 
 ## Usage
@@ -27,11 +30,29 @@ This script will:
 - Check all prerequisites
 - Validate the presence of required TSO game files
 - Build the FreeSO application
-- Generate configuration files
+- Generate server configuration files
 - Create necessary secrets
 - Set up environment variables
 - Start the Docker services
 - Verify that everything is running correctly
+
+**Note**: This script sets up the full server mode. For sandbox mode, simply launch the client and select "Sandbox Mode" from the main menu.
+
+**Important**: The server configuration (`config.json`) is separate from the client configuration. The server config contains database settings and service endpoints, while the client connects to servers dynamically through the launcher interface.
+
+### Sandbox Mode (Local Development/Testing)
+For local development and testing without server dependencies:
+```bash
+# Launch the client and select "Sandbox Mode" from the main menu
+# This runs the game locally without requiring Docker services
+```
+
+Sandbox mode features:
+- Local-only game experience
+- No database or networking required
+- Ideal for development and testing
+- Still requires original TSO game files for core functionality
+- Built-in debugging tools
 
 ### For Development:
 ```bash
@@ -73,3 +94,9 @@ The `quick-start-docker.sh` script provides:
 - The main documentation files have been updated to reference these correct paths
 - Scripts should be run from the project root directory (one level up from this directory)
 - Configuration files should still be placed in the project root as the Docker volumes mount from there
+
+## Related Documentation
+
+- [Client Build Guide](../Documentation/CLIENT_BUILD.md) - Instructions for building and configuring the FreeSO client
+- [Sandbox Mode Documentation](../Documentation/SANDBOX_MODE.md) - Information about sandbox mode operation
+- [Troubleshooting Guide](../Documentation/TROUBLESHOOTING_DOCKER.md) - Solutions for common issues

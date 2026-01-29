@@ -201,6 +201,59 @@ NFS_DATA_PATH=./nfs_data
 EOF
 print_status ".env file created with your settings."
 
+# Step 6b: Set up client configuration
+echo ""
+print_status "Step 6b: Setting up client configuration..."
+
+# Prompt for server URLs
+read -p "Enter the API server URL (default: http://localhost:9000): " -e API_URL
+API_URL=${API_URL:-http://localhost:9000}
+
+read -p "Enter the City selector URL (default: $API_URL): " -e CITY_URL
+CITY_URL=${CITY_URL:-$API_URL}
+
+# Create GlobalSettings.config file if it doesn't exist
+if [ ! -f "config.ini" ]; then
+    print_status "Creating client config.ini file..."
+    cat > config.ini << EOF
+[Settings]
+# Server configuration - update these to match your server's public IP/URL
+GameEntryUrl=$API_URL
+CitySelectorUrl=$CITY_URL
+
+# Graphics settings
+GraphicsWidth=1024
+GraphicsHeight=768
+Windowed=true
+
+# User settings
+LastUser=docker_user
+SkipIntro=true
+
+# Audio settings
+FXVolume=10
+MusicVolume=10
+VoxVolume=10
+AmbienceVolume=10
+
+# Other settings
+CurrentLang=english
+DebugEnabled=false
+ScaleUI=false
+
+# TS1 Hybrid settings (for mixed TSO/TS1 mode)
+TS1HybridEnable=false
+TS1HybridPath=
+
+# Archive settings (for replay/archive functionality)
+ArchiveClientGUID=$(uuidgen)
+ArchiveServerGUID=$(uuidgen)
+EOF
+    print_status "Client config.ini file created with your settings."
+else
+    print_warning "Using existing config.ini file."
+fi
+
 # Step 7: Build the Docker image
 echo ""
 print_status "Step 7: Building Docker image..."
