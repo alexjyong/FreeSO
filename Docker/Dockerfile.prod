@@ -30,7 +30,7 @@ EXPOSE 9000 33100 34100 35100
 
 # Health check - check if the main DLL exists
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD test -f FSO.Server.Core.dll || exit 1
+  CMD test -f server.dll || exit 1
 
 # Entry point - run the server
-ENTRYPOINT ["dotnet", "FSO.Server.Core.dll"]
+ENTRYPOINT ["dotnet", "server.dll"]

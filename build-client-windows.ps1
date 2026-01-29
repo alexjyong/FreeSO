@@ -79,7 +79,7 @@ if (-not $SkipRestore) {
     Write-Host ""
     Write-Host "Restoring dependencies..." -ForegroundColor Cyan
     # Restore dependencies for the client project specifically
-    dotnet restore TSOClient\tso.client\TSOClient.csproj -p:WarningsNotAsErrors=NU1605
+    dotnet restore TSOClient\tso.client\FSO.Client.csproj -p:WarningsNotAsErrors=NU1605
     if ($LASTEXITCODE -ne 0) {
         Write-Host "ERROR: Failed to restore dependencies for client" -ForegroundColor Red
         exit 1
@@ -90,7 +90,7 @@ if (-not $SkipRestore) {
 Write-Host ""
 Write-Host "Building FreeSO Client ($Configuration)..." -ForegroundColor Cyan
 # Build the client project specifically, not the server
-dotnet build TSOClient\tso.client\TSOClient.csproj -c $Configuration --no-restore -p:WarningsNotAsErrors=NU1605
+dotnet build TSOClient\tso.client\FSO.Client.csproj -c $Configuration --no-restore -p:WarningsNotAsErrors=NU1605
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Client build failed" -ForegroundColor Red
     exit 1
@@ -100,7 +100,7 @@ if ($Publish) {
     Write-Host ""
     Write-Host "Publishing FreeSO Client..." -ForegroundColor Cyan
     # Publish the client project specifically
-    dotnet publish TSOClient\tso.client\TSOClient.csproj -c $Configuration -r win-x64 --self-contained false --no-build -p:WarningsNotAsErrors=NU1605 -o publish
+    dotnet publish TSOClient\tso.client\FSO.Client.csproj -c $Configuration -r win-x64 --self-contained false --no-build -p:WarningsNotAsErrors=NU1605 -o publish
     if ($LASTEXITCODE -ne 0) {
         Write-Host "ERROR: Publish failed" -ForegroundColor Red
         exit 1
@@ -110,7 +110,7 @@ if ($Publish) {
 
 Write-Host ""
 Write-Host "=== Build Complete! ===" -ForegroundColor Green
-$exePath = "TSOClient\tso.client\bin\$Configuration\net9.0\TSOClient.exe"
+$exePath = "TSOClient\tso.client\bin\$Configuration\net9.0\FSO.Client.exe"
 Write-Host "Client executable: $exePath" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "TIP: Use -Publish to create a distributable package." -ForegroundColor Yellow
@@ -120,9 +120,10 @@ if ($Run) {
     Write-Host ""
     Write-Host "Launching FreeSO Client..." -ForegroundColor Cyan
     if (Test-Path $exePath) {
-        & $exePath
+        # For the client, we need to run with the game files path
+        & dotnet $exePath --game-path ../game
     } else {
         Write-Host "Client executable not found at expected location." -ForegroundColor Red
-        Write-Host "You may need to run: dotnet run --project TSOClient/tso.client/TSOClient.csproj" -ForegroundColor Yellow
+        Write-Host "You may need to run: dotnet run --project TSOClient/tso.client/FSO.Client.csproj" -ForegroundColor Yellow
     }
 }

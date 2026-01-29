@@ -127,7 +127,7 @@ fi
 if [ "$SKIP_RESTORE" = false ]; then
     print_header "Restoring dependencies..."
     # Restore dependencies for the client project specifically
-    dotnet restore TSOClient/tso.client/TSOClient.csproj -p:WarningsNotAsErrors=NU1605
+    dotnet restore TSOClient/tso.client/FSO.Client.csproj -p:WarningsNotAsErrors=NU1605
     if [ $? -ne 0 ]; then
         print_error "Failed to restore dependencies for client"
         exit 1
@@ -137,7 +137,7 @@ fi
 
 print_header "Building FreeSO Client ($CONFIGURATION)..."
 # Build the client project specifically, not the server
-dotnet build TSOClient/tso.client/TSOClient.csproj -c $CONFIGURATION --no-restore -p:WarningsNotAsErrors=NU1605
+dotnet build TSOClient/tso.client/FSO.Client.csproj -c $CONFIGURATION --no-restore -p:WarningsNotAsErrors=NU1605
 if [ $? -ne 0 ]; then
     print_error "Client build failed"
     exit 1
@@ -146,7 +146,7 @@ fi
 if [ "$PUBLISH" = true ]; then
     print_header "Publishing FreeSO Client..."
     # Publish the client project specifically
-    dotnet publish TSOClient/tso.client/TSOClient.csproj -c $CONFIGURATION -r linux-x64 --self-contained false --no-build -p:WarningsNotAsErrors=NU1605 -o publish
+    dotnet publish TSOClient/tso.client/FSO.Client.csproj -c $CONFIGURATION -r linux-x64 --self-contained false --no-build -p:WarningsNotAsErrors=NU1605 -o publish
     if [ $? -ne 0 ]; then
         print_error "Publish failed"
         exit 1

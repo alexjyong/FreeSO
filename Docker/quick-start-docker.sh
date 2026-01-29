@@ -161,6 +161,7 @@ dotnet build TSOClient/FreeSO.sln -p:Configuration=Release -p:WarningsNotAsError
 mkdir -p publish
 
 # Copy built files to publish directory (this is what the server will use)
+# Note: The client project creates FSO.Client.exe, not TSOClient.exe
 cp -r TSOClient/tso.client/bin/Release/net9.0/* publish/ 2>/dev/null || echo "Client build output not found, continuing..."
 
 print_status "Build completed successfully!"
