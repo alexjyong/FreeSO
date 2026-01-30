@@ -1033,7 +1033,8 @@ namespace FSO.SimAntics.Utils
                     var tempVM = new VM(new VMContext(subworld), new VMServerDriver(new VMTSOGlobalLinkStub()), new VMNullHeadlineProvider());
                     tempVM.Init();
 
-                    var state = (hollowAdj == null)? null : hollowAdj[y * 3 + x];
+                    // Only access hollowAdj if it's not null to avoid NullReferenceException
+                    var state = (hollowAdj == null || hollowAdj.Length <= y * 3 + x || hollowAdj[y * 3 + x] == null) ? null : hollowAdj[y * 3 + x];
                     if (lotsMode == 1) state = null;
 
                     float height;
@@ -1067,7 +1068,11 @@ namespace FSO.SimAntics.Utils
                         }
                         catch (Exception)
                         {
-                            hollowAdj[y * 3 + x] = null;
+                            // Only set hollowAdj if it's not null to avoid NullReferenceException
+                            if (hollowAdj != null)
+                            {
+                                hollowAdj[y * 3 + x] = null;
+                            }
                             subworld.Dispose();
                             x--;
                             continue; //try this surrounding lot again, but as an empty one.
