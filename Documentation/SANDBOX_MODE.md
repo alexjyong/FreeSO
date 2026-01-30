@@ -61,6 +61,22 @@ Even in sandbox mode, the FreeSO client still requires the original TSO game fil
 
 The client specifically looks for `tuning.dat` to verify the game installation.
 
+### 6. NFS Data Requirement
+Sandbox mode also requires an NFS (Network File System) directory for saving lot and object data. If you encounter errors like:
+```
+System.NullReferenceException: Object reference not set to an instance of an object.
+at FSO.SimAntics.Utils.VMLotTerrainRestoreTools.RestoreSurroundings(VM vm, Byte hollowAdj)
+```
+
+This indicates that the NFS directory isn't properly configured or accessible. To fix this:
+
+1. Create an NFS directory: `mkdir -p nfs`
+2. Ensure the `simNFS` setting in your configuration points to this directory
+3. Make sure the directory has proper read/write permissions
+4. The NFS directory should contain subdirectories for lot/object saves
+
+The client expects the NFS directory to be available at the location specified in the configuration (typically `./nfs` relative to the working directory).
+
 ## Limitations of Sandbox Mode
 
 While sandbox mode is useful for development and testing, it has limitations compared to the full multiplayer experience:

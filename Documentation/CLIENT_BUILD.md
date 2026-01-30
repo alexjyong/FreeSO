@@ -123,8 +123,25 @@ The FreeSO client can operate in two modes:
 - No database or networking required
 - Ideal for development and testing
 - Still requires original TSO game files for core functionality
+- Requires NFS directory for lot/object saves (see NFS Data Requirement below)
 - Access through the client's "Sandbox Mode" option
 - Uses local simulation instead of connecting to external servers
+
+#### NFS Data Requirement for Sandbox Mode
+Sandbox mode also requires an NFS (Network File System) directory for saving lot and object data. If you encounter errors like:
+```
+System.NullReferenceException: Object reference not set to an instance of an object.
+at FSO.SimAntics.Utils.VMLotTerrainRestoreTools.RestoreSurroundings(VM vm, Byte hollowAdj)
+```
+
+This indicates that the NFS directory isn't properly configured or accessible. To fix this:
+
+1. Create an NFS directory: `mkdir -p nfs`
+2. Ensure the `simNFS` setting in your configuration points to this directory
+3. Make sure the directory has proper read/write permissions
+4. The NFS directory should contain subdirectories for lot/object saves
+
+The client expects the NFS directory to be available at the location specified in the configuration (typically `./nfs` relative to the working directory).
 
 #### Server Mode
 - Connects to a FreeSO server instance

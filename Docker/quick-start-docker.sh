@@ -155,14 +155,15 @@ cd ..
 
 # Build the client project (based on Azure pipeline which builds FSO_IDE project)
 print_status "Building the FreeSO client project..."
-dotnet build TSOClient/FreeSO.sln -p:Configuration=Release -p:WarningsNotAsErrors=NU1605
+# According to Azure pipeline, it builds FSO_IDE project (which is likely FSO.Windows)
+dotnet build TSOClient/FSO.Windows/FSO.Windows.csproj -c Release -p:WarningsNotAsErrors=NU1605
 
 # Create publish directory
 mkdir -p publish
 
 # Copy built files to publish directory (this is what the server will use)
-# Note: The client project creates FSO.Client.exe, not TSOClient.exe
-cp -r TSOClient/tso.client/bin/Release/net9.0/* publish/ 2>/dev/null || echo "Client build output not found, continuing..."
+# Note: The client project creates FSO.Windows.exe, not TSOClient.exe
+cp -r TSOClient/FSO.Windows/bin/Release/net9.0-windows/* publish/ 2>/dev/null || echo "Client build output not found, continuing..."
 
 print_status "Build completed successfully!"
 

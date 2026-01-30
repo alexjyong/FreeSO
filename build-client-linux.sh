@@ -155,7 +155,7 @@ if [ "$PUBLISH" = true ]; then
 fi
 
 print_header "Build Complete!"
-EXE_PATH="TSOClient/FSO.Windows/bin/$CONFIGURATION/net9.0-windows/FSO.Windows.exe"
+EXE_PATH="TSOClient/FSO.Windows/bin/$CONFIGURATION/net9.0-windows/FreeSO.exe"
 print_status "Client executable: $EXE_PATH"
 echo ""
 print_status "TIP: Use --publish to create a distributable package."

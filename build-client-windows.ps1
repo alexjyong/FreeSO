@@ -110,7 +110,7 @@ if ($Publish) {
 
 Write-Host ""
 Write-Host "=== Build Complete! ===" -ForegroundColor Green
-$exePath = "TSOClient\FSO.Windows\bin\$Configuration\net9.0-windows\FSO.Windows.exe"
+$exePath = "TSOClient\FSO.Windows\bin\$Configuration\net9.0-windows\FreeSO.exe"
 Write-Host "Client executable: $exePath" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "TIP: Use -Publish to create a distributable package." -ForegroundColor Yellow
