@@ -110,20 +110,21 @@ if ($Publish) {
 
 Write-Host ""
 Write-Host "=== Build Complete! ===" -ForegroundColor Green
-$exePath = "TSOClient\tso.client\bin\$Configuration\net9.0\FSO.Client.exe"
-Write-Host "Client executable: $exePath" -ForegroundColor Cyan
+$dllPath = "TSOClient\tso.client\bin\$Configuration\net9.0\FSO.Client.dll"
+Write-Host "Client application built: $dllPath" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "TIP: Use -Publish to create a distributable package." -ForegroundColor Yellow
 Write-Host "TIP: You'll need original TSO game files in a 'game' directory to run the client." -ForegroundColor Yellow
+Write-Host "TIP: To run the client, use: dotnet $dllPath" -ForegroundColor Yellow
 
 if ($Run) {
     Write-Host ""
     Write-Host "Launching FreeSO Client..." -ForegroundColor Cyan
-    if (Test-Path $exePath) {
+    if (Test-Path $dllPath) {
         # For the client, we need to run with the game files path
-        & dotnet $exePath --game-path ../game
+        & dotnet $dllPath --game-path ../game
     } else {
-        Write-Host "Client executable not found at expected location." -ForegroundColor Red
+        Write-Host "Client application not found at expected location." -ForegroundColor Red
         Write-Host "You may need to run: dotnet run --project TSOClient/tso.client/FSO.Client.csproj" -ForegroundColor Yellow
     }
 }
