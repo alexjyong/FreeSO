@@ -155,19 +155,20 @@ if [ "$PUBLISH" = true ]; then
 fi
 
 print_header "Build Complete!"
-EXECUTABLE_PATH="TSOClient/tso.client/bin/$CONFIGURATION/net9.0/TSOClient"
-print_status "Client executable: $EXECUTABLE_PATH"
+DLL_PATH="TSOClient/tso.client/bin/$CONFIGURATION/net9.0/FSO.Client.dll"
+print_status "Client application built: $DLL_PATH"
 echo ""
 print_status "TIP: Use --publish to create a distributable package."
 print_status "TIP: You'll need original TSO game files in a 'game' directory to run the client."
+print_status "TIP: To run the client, use: dotnet $DLL_PATH"
 
 if [ "$RUN" = true ]; then
     print_header "Launching FreeSO Client..."
-    if [ -f "$EXECUTABLE_PATH" ]; then
-        # For Linux, we need to run with dotnet
-        dotnet "$EXECUTABLE_PATH"
+    if [ -f "$DLL_PATH" ]; then
+        # For the client, we need to run with the game files path
+        dotnet "$DLL_PATH" --game-path ../game
     else
-        print_error "Client executable not found at expected location."
-        print_warning "You may need to run: dotnet run --project TSOClient/tso.client/TSOClient.csproj"
+        print_error "Client application not found at expected location."
+        print_warning "You may need to run: dotnet run --project TSOClient/tso.client/FSO.Client.csproj"
     fi
 fi

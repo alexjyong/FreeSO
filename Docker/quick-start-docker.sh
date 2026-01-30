@@ -113,7 +113,7 @@ else
         print_status "  - TSOClient/Content/Objects/objects.dat (recommended)"
         echo ""
         print_status "You can obtain these files from:"
-        print_status "  - https://archive.org/details/TheSimsOnline_2002"
+        print_status "  - https://archive.org/details/TheSimsOnline_201802"
         print_status "  - Original TSO installation (version 1.1097.1.0)"
         echo ""
         print_error "Please acquire the game files and place them in $GAME_FILES_PATH before continuing."
