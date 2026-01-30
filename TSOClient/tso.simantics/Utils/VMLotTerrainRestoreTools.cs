@@ -1000,10 +1000,30 @@ namespace FSO.SimAntics.Utils
 
         public static void RestoreSurroundings(VM vm, byte[][] hollowAdj)
         {
+            // Check if VM context is properly initialized
+            if (vm?.Context?.Architecture == null)
+            {
+                // Context is not properly initialized, skip surrounding lots
+                return;
+            }
+
+            if (vm?.TSOState?.Terrain == null)
+            {
+                // TSOState or Terrain is not properly initialized, skip surrounding lots
+                return;
+            }
+
             var myArch = vm.Context.Architecture;
             var terrain = vm.TSOState.Terrain;
             var size = myArch.Width;
             var lotsMode = WorldConfig.Current.SurroundingLots;
+
+            // Check if blueprint is available
+            if (vm.Context.Blueprint?.SubWorlds == null)
+            {
+                return;
+            }
+
             foreach (var world in vm.Context.Blueprint.SubWorlds)
             {
                 world.Dispose();
