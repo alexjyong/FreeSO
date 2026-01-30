@@ -12,9 +12,9 @@ This directory contains all Docker-related files for the FreeSO server deploymen
 - `deploy-prod.sh` - Production deployment script
 - `monitor.sh` - Server monitoring script
 - `backup.sh` - Backup automation script
-- `quick-start-docker.sh` - Complete automated setup script
-- `build-client-windows.ps1` - Automated client build script for Windows
-- `build-client-linux.sh` - Automated client build script for Linux
+- `quick-start-docker.sh` - Complete automated setup script (builds, configures, and deploys everything)
+- `build-client-windows.ps1` - Automated build script for Windows client
+- `build-client-linux.sh` - Automated build script for Linux client
 - `README.md` - This documentation file
 
 ## Usage
@@ -94,6 +94,26 @@ The `quick-start-docker.sh` script provides:
 - The main documentation files have been updated to reference these correct paths
 - Scripts should be run from the project root directory (one level up from this directory)
 - Configuration files should still be placed in the project root as the Docker volumes mount from there
+- For game files, you can either download them manually or use the automated FSOInstaller
+
+## Game File Installation Options
+
+### Manual Installation
+Download The Sims Online game files from archive.org and place them in the `./game` directory with the required structure.
+
+### Automated Installation
+Use the FSOInstaller to automatically download and set up the game files:
+
+```bash
+# Navigate to the installer
+cd FSOInstaller/FSOInstaller
+
+# Build and run the installer
+dotnet build -c Release
+dotnet run -c Release
+```
+
+The installer will download the game files from EA's official servers and set them up in the correct format.
 
 ## Related Documentation
 

@@ -55,31 +55,31 @@ if (-not (Test-Path "TSOClient\FSO.Server.Core\FSO.Server.Core.csproj")) {
 if ($Clean) {
     Write-Host ""
     Write-Host "Cleaning build artifacts..." -ForegroundColor Cyan
-    
+
     $binFolders = Get-ChildItem -Path . -Include bin -Recurse -Directory -ErrorAction SilentlyContinue
     $objFolders = Get-ChildItem -Path . -Include obj -Recurse -Directory -ErrorAction SilentlyContinue
-    
+
     $totalFolders = $binFolders.Count + $objFolders.Count
     Write-Host "  Found $totalFolders folders to remove" -ForegroundColor Gray
-    
+
     foreach ($folder in $binFolders) {
         Remove-Item -Path $folder.FullName -Recurse -Force -ErrorAction SilentlyContinue
         Write-Host "  Removed $($folder.FullName -replace [regex]::Escape($PWD.Path + '\'), '')" -ForegroundColor DarkGray
     }
-    
+
     foreach ($folder in $objFolders) {
         Remove-Item -Path $folder.FullName -Recurse -Force -ErrorAction SilentlyContinue
         Write-Host "  Removed $($folder.FullName -replace [regex]::Escape($PWD.Path + '\'), '')" -ForegroundColor DarkGray
     }
-    
+
     Write-Host "Clean complete!" -ForegroundColor Green
 }
 
 if (-not $SkipRestore) {
     Write-Host ""
     Write-Host "Restoring dependencies..." -ForegroundColor Cyan
-    # Restore dependencies for the client project specifically
-    dotnet restore TSOClient\tso.client\FSO.Client.csproj -p:WarningsNotAsErrors=NU1605
+    # Restore dependencies for the main client executable project
+    dotnet restore TSOClient\FSO.Windows\FSO.Windows.csproj -p:WarningsNotAsErrors=NU1605
     if ($LASTEXITCODE -ne 0) {
         Write-Host "ERROR: Failed to restore dependencies for client" -ForegroundColor Red
         exit 1
@@ -89,8 +89,8 @@ if (-not $SkipRestore) {
 
 Write-Host ""
 Write-Host "Building FreeSO Client ($Configuration)..." -ForegroundColor Cyan
-# Build the client project specifically, not the server
-dotnet build TSOClient\tso.client\FSO.Client.csproj -c $Configuration --no-restore -p:WarningsNotAsErrors=NU1605
+# Build the main client executable project
+dotnet build TSOClient\FSO.Windows\FSO.Windows.csproj -c $Configuration --no-restore -p:WarningsNotAsErrors=NU1605
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Client build failed" -ForegroundColor Red
     exit 1
@@ -99,8 +99,8 @@ if ($LASTEXITCODE -ne 0) {
 if ($Publish) {
     Write-Host ""
     Write-Host "Publishing FreeSO Client..." -ForegroundColor Cyan
-    # Publish the client project specifically
-    dotnet publish TSOClient\tso.client\FSO.Client.csproj -c $Configuration -r win-x64 --self-contained false --no-build -p:WarningsNotAsErrors=NU1605 -o publish
+    # Publish the main client executable project
+    dotnet publish TSOClient\FSO.Windows\FSO.Windows.csproj -c $Configuration -r win-x64 --self-contained false --no-build -p:WarningsNotAsErrors=NU1605 -o publish
     if ($LASTEXITCODE -ne 0) {
         Write-Host "ERROR: Publish failed" -ForegroundColor Red
         exit 1
@@ -110,21 +110,20 @@ if ($Publish) {
 
 Write-Host ""
 Write-Host "=== Build Complete! ===" -ForegroundColor Green
-$dllPath = "TSOClient\tso.client\bin\$Configuration\net9.0\FSO.Client.dll"
-Write-Host "Client application built: $dllPath" -ForegroundColor Cyan
+$exePath = "TSOClient\FSO.Windows\bin\$Configuration\net9.0-windows\FSO.Windows.exe"
+Write-Host "Client executable: $exePath" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "TIP: Use -Publish to create a distributable package." -ForegroundColor Yellow
 Write-Host "TIP: You'll need original TSO game files in a 'game' directory to run the client." -ForegroundColor Yellow
-Write-Host "TIP: To run the client, use: dotnet $dllPath" -ForegroundColor Yellow
 
 if ($Run) {
     Write-Host ""
     Write-Host "Launching FreeSO Client..." -ForegroundColor Cyan
-    if (Test-Path $dllPath) {
+    if (Test-Path $exePath) {
         # For the client, we need to run with the game files path
-        & dotnet $dllPath --game-path ../game
+        & $exePath --game-path ../game
     } else {
-        Write-Host "Client application not found at expected location." -ForegroundColor Red
-        Write-Host "You may need to run: dotnet run --project TSOClient/tso.client/FSO.Client.csproj" -ForegroundColor Yellow
+        Write-Host "Client executable not found at expected location." -ForegroundColor Red
+        Write-Host "You may need to run: dotnet run --project TSOClient/FSO.Windows/FSO.Windows.csproj" -ForegroundColor Yellow
     }
 }

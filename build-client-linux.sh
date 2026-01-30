@@ -117,17 +117,17 @@ fi
 
 if [ "$CLEAN" = true ]; then
     print_header "Cleaning build artifacts..."
-    
+
     find . -name bin -type d -exec rm -rf {} + 2>/dev/null || true
     find . -name obj -type d -exec rm -rf {} + 2>/dev/null || true
-    
+
     print_status "Clean complete!"
 fi
 
 if [ "$SKIP_RESTORE" = false ]; then
     print_header "Restoring dependencies..."
-    # Restore dependencies for the client project specifically
-    dotnet restore TSOClient/tso.client/FSO.Client.csproj -p:WarningsNotAsErrors=NU1605
+    # Restore dependencies for the main client executable project
+    dotnet restore TSOClient/FSO.Windows/FSO.Windows.csproj -p:WarningsNotAsErrors=NU1605
     if [ $? -ne 0 ]; then
         print_error "Failed to restore dependencies for client"
         exit 1
@@ -136,8 +136,8 @@ if [ "$SKIP_RESTORE" = false ]; then
 fi
 
 print_header "Building FreeSO Client ($CONFIGURATION)..."
-# Build the client project specifically, not the server
-dotnet build TSOClient/tso.client/FSO.Client.csproj -c $CONFIGURATION --no-restore -p:WarningsNotAsErrors=NU1605
+# Build the main client executable project
+dotnet build TSOClient/FSO.Windows/FSO.Windows.csproj -c $CONFIGURATION --no-restore -p:WarningsNotAsErrors=NU1605
 if [ $? -ne 0 ]; then
     print_error "Client build failed"
     exit 1
@@ -145,8 +145,8 @@ fi
 
 if [ "$PUBLISH" = true ]; then
     print_header "Publishing FreeSO Client..."
-    # Publish the client project specifically
-    dotnet publish TSOClient/tso.client/FSO.Client.csproj -c $CONFIGURATION -r linux-x64 --self-contained false --no-build -p:WarningsNotAsErrors=NU1605 -o publish
+    # Publish the main client executable project
+    dotnet publish TSOClient/FSO.Windows/FSO.Windows.csproj -c $CONFIGURATION -r linux-x64 --self-contained false --no-build -p:WarningsNotAsErrors=NU1605 -o publish
     if [ $? -ne 0 ]; then
         print_error "Publish failed"
         exit 1
@@ -155,20 +155,21 @@ if [ "$PUBLISH" = true ]; then
 fi
 
 print_header "Build Complete!"
-DLL_PATH="TSOClient/tso.client/bin/$CONFIGURATION/net9.0/FSO.Client.dll"
-print_status "Client application built: $DLL_PATH"
+EXE_PATH="TSOClient/FSO.Windows/bin/$CONFIGURATION/net9.0-windows/FSO.Windows.exe"
+print_status "Client executable: $EXE_PATH"
 echo ""
 print_status "TIP: Use --publish to create a distributable package."
 print_status "TIP: You'll need original TSO game files in a 'game' directory to run the client."
-print_status "TIP: To run the client, use: dotnet $DLL_PATH"
 
 if [ "$RUN" = true ]; then
     print_header "Launching FreeSO Client..."
-    if [ -f "$DLL_PATH" ]; then
+    if [ -f "$EXE_PATH" ]; then
         # For the client, we need to run with the game files path
-        dotnet "$DLL_PATH" --game-path ../game
+        # Note: On Linux, we might need to use wine or run the .NET version
+        print_warning "Note: The Windows executable may not run directly on Linux."
+        print_status "To run on Linux, use: dotnet TSOClient/tso.client/bin/$CONFIGURATION/net9.0/FSO.Client.dll"
     else
-        print_error "Client application not found at expected location."
-        print_warning "You may need to run: dotnet run --project TSOClient/tso.client/FSO.Client.csproj"
+        print_error "Client executable not found at expected location."
+        print_warning "You may need to run: dotnet run --project TSOClient/FSO.Windows/FSO.Windows.csproj"
     fi
 fi

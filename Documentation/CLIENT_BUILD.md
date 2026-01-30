@@ -12,7 +12,7 @@ Before building the FreeSO client, you need:
 2. **MonoGame 3.8** - Graphics framework dependency
 3. **Git** - For cloning the repository
 4. **Original The Sims Online game files** (version 1.1097.1.0)
-   - Available from: https://archive.org/details/TheSimsOnline_2002
+   - Available from: https://archive.org/details/TheSimsOnline_201802
 5. **At least 4GB of RAM** for building
 6. **Approximately 2GB of disk space** for the build process
 
@@ -66,21 +66,28 @@ dotnet build -c Release -p:WarningsNotAsErrors=NU1605
 
 ### 1. Prepare Game Files
 
-The FreeSO client requires original The Sims Online game files. The client searches for these files in specific locations:
+The FreeSO client requires original The Sims Online game files.
+1. Download The Sims Online game files from archive.org
+2. Extract them to one of the default locations, OR
+3. Set the `StartupPath` in `config.ini` to point to your game directory
 
-#### Default Search Locations
+The client searches for these files in specific locations:
+
+##### Default Search Locations
 The client searches for game files in this order:
 1. `../The Sims Online/TSOClient/` (relative to the client executable)
 2. `game/TSOClient/` (for Linux systems)
 3. Windows registry location: `C:\Program Files\Maxis\The Sims Online\TSOClient\`
 
-#### Required Game Files
+##### Required Game Files
 The client verifies the game installation by looking for `tuning.dat` in the game directory.
 
-#### Setting Up Game Files
-1. Download The Sims Online game files from archive.org
-2. Extract them to one of the default locations above, OR
-3. Set the `StartupPath` in `config.ini` to point to your game directory
+For manual setup, ensure your game directory contains:
+- `tuning.dat` (or `tuning.xml`)
+- `TSOClient/` directory with subdirectories
+- `TSOClient.exe` (or equivalent client executable)
+- `UserData/` directory (if available)
+
 
 For Docker deployments, the game files should be mounted to `/game` in the container, and the `gameLocation` in the server's `config.json` should be set to `"./game/"`.
 
@@ -131,15 +138,34 @@ The FreeSO client can operate in two modes:
 
 ### 1. From the Command Line
 
+The main FreeSO client executable is located in the FSO.Windows project. On Windows, you can run the .exe directly:
+
 ```bash
-cd tso.client/bin/Release/net9.0/
-dotnet TSOClient.dll
+cd TSOClient/FSO.Windows/bin/Release/net9.0-windows/
+./FSO.Windows.exe
+```
+
+On Linux, you need to run the client library with the dotnet command:
+
+```bash
+cd TSOClient/tso.client/bin/Release/net9.0/
+dotnet FSO.Client.dll
+```
+
+On Windows PowerShell, you can also use:
+```powershell
+cd TSOClient\tso.client\bin\Release\net9.0\
+dotnet.exe FSO.Client.dll
 ```
 
 ### 2. With Custom Game Directory
 
 ```bash
-dotnet TSOClient.dll --game-path /path/to/your/tso/game/files
+# On Windows
+./FSO.Windows.exe --game-path ../game
+
+# On Linux
+dotnet FSO.Client.dll --game-path ../game
 ```
 
 ### 3. For Development
@@ -147,8 +173,34 @@ dotnet TSOClient.dll --game-path /path/to/your/tso/game/files
 For development purposes, you can run with additional debugging options:
 
 ```bash
-dotnet TSOClient.dll --debug-mode --skip-intro
+# On Windows
+./FSO.Windows.exe --debug-mode --skip-intro
+
+# On Linux
+dotnet FSO.Client.dll --debug-mode --skip-intro
 ```
+
+### 4. Common Windows PowerShell Issues
+
+If you encounter the error:
+```
+'TSOClient' could not be loaded. For more information, run 'Import-Module TSOClient'.
+```
+
+This happens when PowerShell interprets the path as a module. To fix this:
+
+1. Use the full path with the `dotnet` command:
+   ```powershell
+   dotnet.exe "$pwd\TSOClient\tso.client\bin\Release\net9.0\FSO.Client.dll"
+   ```
+
+2. Or run the Windows executable directly:
+   ```powershell
+   cd TSOClient\FSO.Windows\bin\Release\net9.0-windows\
+   .\FSO.Windows.exe
+   ```
+
+3. Make sure you have the original TSO game files in the expected location before running the client
 
 ## Automated Client Build Scripts
 
