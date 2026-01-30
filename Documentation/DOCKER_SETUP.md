@@ -9,7 +9,7 @@ Before setting up the FreeSO server with Docker, you need:
 1. **Docker Engine** (version 20.10 or higher)
 2. **Docker Compose** (version 2.0 or higher)
 3. **Original The Sims Online game files** (version 1.1097.1.0)
-   - Available from: https://archive.org/details/TheSimsOnline_2002
+   - Available from: https://archive.org/details/TheSimsOnline_201802
 4. **At least 4GB of RAM** allocated to Docker (more recommended)
 5. **Sufficient disk space** for the database and NFS data
 6. **.NET SDK 9.0** (for building the server)

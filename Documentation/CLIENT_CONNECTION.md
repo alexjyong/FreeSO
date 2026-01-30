@@ -10,7 +10,7 @@ FreeSO recreates the original The Sims Online server experience, allowing player
 
 ### 1. Original The Sims Online Client
 - You need the original The Sims Online client (version 1.1097.1.0)
-- Available from: https://archive.org/details/TheSimsOnline_2002
+- Available from: https://archive.org/details/TheSimsOnline_201802
 - The client must be the original version to work with FreeSO's protocol implementation
 
 ### 2. FreeSO Client Patches

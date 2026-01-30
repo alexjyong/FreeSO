@@ -48,7 +48,7 @@ You must have the original The Sims Online game files from version 1.1097.1.0:
    - `TSOClient/Content/Database/tso_content.mdb` (or equivalent)
 
 ### Where to Obtain Game Files
-- **Internet Archive**: https://archive.org/details/TheSimsOnline_2002
+- **Internet Archive**: https://archive.org/details/TheSimsOnline_201802
 - **Original Installation**: From a legitimate copy of The Sims Online version 1.1097.1.0
 
 ## FreeSO Client Modifications
