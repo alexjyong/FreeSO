@@ -1,4 +1,4 @@
-﻿using FSO.Files.Formats.IFF.Chunks;
+using FSO.Files.Formats.IFF.Chunks;
 using FSO.Files.Utils;
 using FSO.LotView.Components;
 using FSO.LotView.Model;
@@ -6,6 +6,7 @@ using FSO.SimAntics.Engine;
 using FSO.SimAntics.Model;
 using FSO.SimAntics.NetPlay.Model.Commands;
 using FSO.SimAntics.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -295,11 +296,69 @@ namespace FSO.SimAntics.Primitives
                     if (fneigh == null) return VMPrimitiveExitCode.GOTO_FALSE;
                     AddToFamily(context.VM.TS1State.CurrentFamily, fneigh, context.VM);
                     return VMPrimitiveExitCode.GOTO_TRUE;
-                // 34. PromoteFameIfNeeded
+                case VMGenericTS1CallMode.PromoteFameIfNeeded: //34
+                    {
+                        var avatar = context.Caller as VMAvatar;
+                        if (avatar == null) return VMPrimitiveExitCode.GOTO_FALSE;
+
+                        var fameScore = avatar.GetPersonData(VMPersonDataVariable.TS1FameScore);
+                        var starPower = avatar.GetPersonData(VMPersonDataVariable.TS1FameStarPower);
+                        var highWatermark = avatar.GetPersonData(VMPersonDataVariable.TS1FameStarHighWatermark);
+
+                        // Temp0 contains amount to add (default 1 if not specified)
+                        short addAmount = context.Thread.TempRegisters[0] > 0
+                            ? context.Thread.TempRegisters[0] : (short)1;
+
+                        fameScore = (short)Math.Min(fameScore + addAmount, short.MaxValue);
+                        starPower = (short)Math.Min(starPower + addAmount, short.MaxValue);
+
+                        if (starPower > highWatermark)
+                            highWatermark = starPower;
+
+                        avatar.SetPersonData(VMPersonDataVariable.TS1FameScore, fameScore);
+                        avatar.SetPersonData(VMPersonDataVariable.TS1FameStarPower, starPower);
+                        avatar.SetPersonData(VMPersonDataVariable.TS1FameStarHighWatermark, highWatermark);
+
+                        // Persist to neighbor data
+                        var nid = avatar.GetPersonData(VMPersonDataVariable.NeighborId);
+                        var fameneighbour = Content.Content.Get().Neighborhood.GetNeighborByID(nid);
+                        if (fameneighbour?.PersonData != null)
+                        {
+                            fameneighbour.PersonData[(int)VMPersonDataVariable.TS1FameScore] = fameScore;
+                            fameneighbour.PersonData[(int)VMPersonDataVariable.TS1FameStarPower] = starPower;
+                            fameneighbour.PersonData[(int)VMPersonDataVariable.TS1FameStarHighWatermark] = highWatermark;
+                        }
+
+                        return VMPrimitiveExitCode.GOTO_TRUE;
+                    }
                 case VMGenericTS1CallMode.TakeTaxiHook: //35
                     //not sure where this one is called, seems to have been added for studiotown
                     break;
-                // 36. DemoteFameIfNeeded
+                case VMGenericTS1CallMode.DemoteFameIfNeeded: //36
+                    {
+                        var avatar = context.Caller as VMAvatar;
+                        if (avatar == null) return VMPrimitiveExitCode.GOTO_FALSE;
+
+                        var starPower = avatar.GetPersonData(VMPersonDataVariable.TS1FameStarPower);
+
+                        // Temp0 contains amount to subtract (default 1 if not specified)
+                        short removeAmount = context.Thread.TempRegisters[0] > 0
+                            ? context.Thread.TempRegisters[0] : (short)1;
+
+                        starPower = (short)Math.Max(starPower - removeAmount, 0);
+
+                        avatar.SetPersonData(VMPersonDataVariable.TS1FameStarPower, starPower);
+
+                        // Persist to neighbor data
+                        var nid = avatar.GetPersonData(VMPersonDataVariable.NeighborId);
+                        var fameneighbour = Content.Content.Get().Neighborhood.GetNeighborByID(nid);
+                        if (fameneighbour?.PersonData != null)
+                        {
+                            fameneighbour.PersonData[(int)VMPersonDataVariable.TS1FameStarPower] = starPower;
+                        }
+
+                        return VMPrimitiveExitCode.GOTO_TRUE;
+                    }
                 // 37. CancelPieMenu
                 // 38. GetTokensFromString (MM)
                 // 39. ChildToAdult (let's make this at least keep their skin colour, maybe)
