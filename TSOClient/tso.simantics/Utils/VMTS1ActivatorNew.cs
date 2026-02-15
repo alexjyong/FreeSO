@@ -412,6 +412,226 @@ namespace FSO.SimAntics.Utils
             return ava;
         }
 
+        /// <summary>
+        /// Converts a TS1 IFF house file to a filtered VMMarshal, keeping only objects
+        /// that pass the guidFilter predicate. Does not require a VM instance.
+        /// Used for eviction (Case B: house never played in Simitone).
+        /// </summary>
+        public static VMMarshal ConvertToFilteredMarshal(IffFile iff, short houseNumber, Func<uint, bool> guidFilter)
+        {
+            var activator = new VMTS1ActivatorNew(null, houseNumber);
+            return activator.ConvertToFilteredMarshalInternal(iff, guidFilter);
+        }
+
+        private VMMarshal ConvertToFilteredMarshalInternal(IffFile iff, Func<uint, bool> guidFilter)
+        {
+            var content = Content.Content.Get();
+            var simi = iff.Get<SIMI>(1);
+            var hous = iff.Get<HOUS>(0);
+
+            var marshal = new VMMarshal();
+            marshal.TS1 = true;
+            marshal.GlobalState = simi.GlobalData.ToArray();
+
+            Size = simi.GlobalData[23];
+
+            marshal.GlobalState[20] = 255;
+            marshal.GlobalState[25] = 4;
+            marshal.GlobalState[17] = 4;
+
+            FlipRoad = (hous.CameraDir & 1) > 0;
+
+            var arch = ConvertArchitecture(iff, hous, Size);
+
+            var clock = new VMClockMarshal
+            {
+                TicksPerMinute = 30,
+                Hours = marshal.GlobalState[0],
+                DayOfMonth = marshal.GlobalState[1],
+                Minutes = marshal.GlobalState[5],
+                Month = marshal.GlobalState[7],
+                Year = marshal.GlobalState[8]
+            };
+            clock.MinuteFractions = marshal.GlobalState[6] * clock.TicksPerMinute;
+
+            marshal.Context = new VMContextMarshal
+            {
+                Architecture = arch,
+                Clock = clock,
+                Ambience = new VMAmbientSoundMarshal(),
+                RandomSeed = (ulong)((new Random()).NextDouble() * ulong.MaxValue)
+            };
+
+            // Zero financial values, clear family state
+            var ts1State = new VMTS1LotState();
+            var filteredSimi = iff.Get<SIMI>(1);
+            filteredSimi.ObjectsValue = 0;
+            // Keep ArchitectureValue as-is (architecture stays)
+            for (int i = 0; i < filteredSimi.BudgetDays.Length; i++)
+            {
+                filteredSimi.BudgetDays[i].Valid = 0;
+            }
+            ts1State.SimulationInfo = filteredSimi;
+            ts1State.CurrentFamily = null;
+            marshal.PlatformState = ts1State;
+
+            // Parse objects and filter
+            var objt = iff.Get<OBJT>(0);
+            var objm = iff.Get<OBJM>(1);
+
+            objm.Prepare((ushort typeID) =>
+            {
+                var entry = objt.Entries[typeID - 1];
+                return new OBJMResource()
+                {
+                    OBJD = content.WorldObjects.Get(entry.GUID)?.OBJ,
+                    OBJT = entry
+                };
+            });
+
+            var objects = new List<VMEntityMarshal>();
+            var groups = new List<VMMultitileGroupMarshal>();
+            var groupBuilders = new Dictionary<short, TS1MultitileBuilder>();
+
+            var objsById = objm.ObjectData.Values.OrderBy(obj => obj.Instance.ObjectData[(int)VMStackObjectVariable.ObjectId]);
+
+            foreach (var obj in objsById)
+            {
+                var inst = obj.Instance;
+
+                if (inst.OBJD == null) continue;
+                if (inst.PersonData != null) continue; // Skip avatars
+                if (!guidFilter(inst.OBJT.GUID)) continue; // Skip objects that don't pass filter
+
+                var master = inst.MultitileData.HasValue ? GetMasterOBJD(inst.OBJD) : null;
+
+                var gobj = new VMGameObjectMarshal();
+                gobj.Direction = (Direction)(1 << inst.ObjectData[(int)VMStackObjectVariable.Direction]);
+                gobj.PlatformState = new VMTS1ObjectState();
+
+                VMEntityMarshal ent = gobj;
+
+                ent.TS1 = true;
+                ent.GUID = inst.OBJT.GUID;
+                ent.MasterGUID = master == null ? 0 : master.GUID;
+
+                ent.Position = inst.X == -16 && inst.Y == -16 ?
+                    LotTilePos.OUT_OF_WORLD :
+                    new LotTilePos((short)inst.X, (short)inst.Y, (sbyte)inst.Level);
+
+                ent.Attributes = inst.Attributes;
+                ent.MyList = new short[0];
+                ent.ObjectData = inst.ObjectData;
+                ent.ObjectID = inst.ObjectData[(int)VMStackObjectVariable.ObjectId];
+                ent.PersistID = (uint)ent.ObjectID;
+                ent.Container = inst.ObjectData[(int)VMStackObjectVariable.ContainerId];
+                ent.ContainerSlot = inst.ObjectData[(int)VMStackObjectVariable.SlotNumber];
+
+                ent.DynamicSpriteFlags = 0;
+                ent.DynamicSpriteFlags2 = 0;
+
+                for (int i = 0; i < inst.DynamicSpriteFlags.Length; i++)
+                {
+                    if (inst.DynamicSpriteFlags[i] != 0)
+                    {
+                        if (i < 64)
+                            ent.DynamicSpriteFlags |= 1ul << i;
+                        else
+                            ent.DynamicSpriteFlags2 |= 1ul << (i - 64);
+                    }
+                }
+
+                ent.LightColor = Color.White;
+                ent.Contained = inst.Slots.Select(x => x.ObjectID).ToArray();
+                ent.MeToObject = new VMEntityRelationshipMarshal[0];
+                ent.MeToPersist = new VMEntityPersistRelationshipMarshal[0];
+
+                objects.Add(ent);
+
+                if (inst.MultitileData == null)
+                {
+                    groups.Add(new VMMultitileGroupMarshal()
+                    {
+                        MultiTile = false,
+                        Name = inst.OBJT.Name,
+                        Objects = new short[] { ent.ObjectID },
+                        Offsets = new LotTilePos[] { new LotTilePos() },
+                        Price = inst.OBJD.Price,
+                        SalePrice = -1,
+                    });
+                }
+                else
+                {
+                    var mt = inst.MultitileData.Value;
+                    short lead = mt.MultitileParentID == 0 ? ent.ObjectID : mt.MultitileParentID;
+                    if (!groupBuilders.TryGetValue(lead, out TS1MultitileBuilder builder))
+                    {
+                        builder = new TS1MultitileBuilder()
+                        {
+                            Name = master?.ChunkLabel ?? inst.OBJT.Name,
+                            Objects = new List<short>(),
+                            Offsets = new List<LotTilePos>(),
+                            Price = master?.Price ?? inst.OBJD.Price,
+                        };
+                        groupBuilders.Add(lead, builder);
+                    }
+
+                    var offset = LotTilePos.FromBigTile((short)mt.GroupX, (short)mt.GroupY, (sbyte)mt.GroupLevel);
+
+                    if (lead == ent.ObjectID)
+                    {
+                        builder.Objects.Insert(0, ent.ObjectID);
+                        builder.Offsets.Insert(0, offset);
+                    }
+                    else
+                    {
+                        builder.Objects.Add(ent.ObjectID);
+                        builder.Offsets.Add(offset);
+                    }
+                }
+            }
+
+            foreach (var builder in groupBuilders.Values)
+            {
+                groups.Add(new VMMultitileGroupMarshal()
+                {
+                    MultiTile = true,
+                    Name = builder.Name,
+                    Objects = builder.Objects.ToArray(),
+                    Offsets = builder.Offsets.ToArray(),
+                    Price = builder.Price,
+                    SalePrice = -1,
+                });
+            }
+
+            marshal.Entities = objects.ToArray();
+            // Create a minimal empty thread per entity (VM expects 1:1 correspondence)
+            var threads = new VMThreadMarshal[objects.Count];
+            for (int i = 0; i < threads.Length; i++)
+            {
+                threads[i] = new VMThreadMarshal
+                {
+                    Stack = new VMStackFrameMarshal[0],
+                    Queue = new VMQueuedActionMarshal[0],
+                    ActiveQueueBlock = -1,
+                    TempRegisters = new short[20],
+                    TempXL = new int[2],
+                };
+            }
+            marshal.Threads = threads;
+            marshal.MultitileGroups = groups.ToArray();
+
+            short maxId = 0;
+            foreach (var ent in objects)
+            {
+                if (ent.ObjectID > maxId) maxId = ent.ObjectID;
+            }
+            marshal.ObjectId = (short)(maxId + 1);
+            if (marshal.ObjectId < 1) marshal.ObjectId = 1;
+
+            return marshal;
+        }
+
         public Blueprint LoadFromIff(IffFile iff)
         {
             var content = Content.Content.Get();

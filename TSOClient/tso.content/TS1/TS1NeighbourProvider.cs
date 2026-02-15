@@ -260,6 +260,23 @@ namespace FSO.Content.TS1
             FamilyForHouse.Remove(houseID);
         }
 
+        /// <summary>
+        /// Resets a house by replacing the house IFF with the provided file
+        /// and deleting any cached FSOV data.
+        /// </summary>
+        public void ResetHouse(int houseID, IffFile newIff)
+        {
+            SaveHouse(houseID, newIff);
+
+            // Delete cached fsov
+            var fsovDir = Path.Combine(FSOEnvironment.UserDir, "LocalHouse/");
+            var fsovPath = Path.Combine(fsovDir, "House" + houseID.ToString().PadLeft(2, '0') + ".fsov");
+            if (File.Exists(fsovPath))
+            {
+                File.Delete(fsovPath);
+            }
+        }
+
         public void SetFamilyForHouse(short houseID, FAMI family, bool buy)
         {
             family.HouseNumber = houseID;
