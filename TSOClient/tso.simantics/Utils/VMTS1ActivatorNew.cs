@@ -479,6 +479,20 @@ namespace FSO.SimAntics.Utils
             var objt = iff.Get<OBJT>(0);
             var objm = iff.Get<OBJM>(1);
 
+            var objects = new List<VMEntityMarshal>();
+            var groups = new List<VMMultitileGroupMarshal>();
+            var groupBuilders = new Dictionary<short, TS1MultitileBuilder>();
+
+            if (objt == null || objm == null)
+            {
+                // No objects in this lot - skip object parsing entirely
+                marshal.Entities = objects.ToArray();
+                marshal.Threads = new VMThreadMarshal[0];
+                marshal.MultitileGroups = groups.ToArray();
+                marshal.ObjectId = 1;
+                return marshal;
+            }
+
             objm.Prepare((ushort typeID) =>
             {
                 var entry = objt.Entries[typeID - 1];
@@ -488,10 +502,6 @@ namespace FSO.SimAntics.Utils
                     OBJT = entry
                 };
             });
-
-            var objects = new List<VMEntityMarshal>();
-            var groups = new List<VMMultitileGroupMarshal>();
-            var groupBuilders = new Dictionary<short, TS1MultitileBuilder>();
 
             var objsById = objm.ObjectData.Values.OrderBy(obj => obj.Instance.ObjectData[(int)VMStackObjectVariable.ObjectId]);
 
