@@ -511,9 +511,11 @@ namespace FSO.SimAntics.Utils
 
                 if (inst.OBJD == null) continue;
                 if (inst.PersonData != null) continue; // Skip avatars
-                // Keep all OUT_OF_WORLD objects (controllers + system objects) and anything
-                // passing the guid filter (build-mode, essential). Controllers keep their
-                // vanilla OBJM ObjectData so EP2 can re-initialise them correctly.
+                // Skip controllers: VMBlueprintRestoreCmd's spawn loop re-spawns them
+                // fresh (EP0 + EP2), matching the brand-new vanilla lot path.
+                if (content.WorldObjects.ControllerObjects.Any(c => (uint)c.ID == inst.OBJT.GUID)) continue;
+                // Keep non-controller OUT_OF_WORLD objects (e.g. system objects) and
+                // anything passing the guid filter (build-mode, essential).
                 var isOutOfWorld = inst.X == -16 && inst.Y == -16;
                 if (!isOutOfWorld && !guidFilter(inst.OBJT.GUID)) continue;
 
