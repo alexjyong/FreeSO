@@ -466,7 +466,7 @@ namespace FSO.SimAntics.Utils
             var ts1State = new VMTS1LotState();
             var filteredSimi = iff.Get<SIMI>(1);
             filteredSimi.ObjectsValue = 0;
-            // Keep ArchitectureValue as-is (architecture stays)
+            filteredSimi.Version = 0x3E; // Normalize version: SIMI.Write hardcodes 0x3E in the stream but uses instance Version for item count, causing misalignment for TS1 originals (Version=0x40)
             for (int i = 0; i < filteredSimi.BudgetDays.Length; i++)
             {
                 filteredSimi.BudgetDays[i].Valid = 0;
@@ -511,7 +511,11 @@ namespace FSO.SimAntics.Utils
 
                 if (inst.OBJD == null) continue;
                 if (inst.PersonData != null) continue; // Skip avatars
-                if (!guidFilter(inst.OBJT.GUID)) continue; // Skip objects that don't pass filter
+                // Keep all OUT_OF_WORLD objects (controllers + system objects) and anything
+                // passing the guid filter (build-mode, essential). Controllers keep their
+                // vanilla OBJM ObjectData so EP2 can re-initialise them correctly.
+                var isOutOfWorld = inst.X == -16 && inst.Y == -16;
+                if (!isOutOfWorld && !guidFilter(inst.OBJT.GUID)) continue;
 
                 var master = inst.MultitileData.HasValue ? GetMasterOBJD(inst.OBJD) : null;
 
@@ -613,6 +617,11 @@ namespace FSO.SimAntics.Utils
                     SalePrice = -1,
                 });
             }
+
+            // Recompute ArchitectureValue from actual walls/floors + kept build-mode objects.
+            // TS1 original SIMI often has ArchitectureValue = 0 (everything was in ObjectsValue),
+            // so we must compute it ourselves to get a non-zero purchase price on the evicted lot.
+            filteredSimi.ArchitectureValue = VMArchitectureStats.GetArchValue(arch) + groups.Sum(g => g.Price);
 
             marshal.Entities = objects.ToArray();
             // Create a minimal empty thread per entity (VM expects 1:1 correspondence)

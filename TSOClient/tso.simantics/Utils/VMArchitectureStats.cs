@@ -1,5 +1,6 @@
 ﻿using FSO.Content;
 using FSO.LotView.Model;
+using FSO.SimAntics.Marshals;
 using System;
 using System.Linq;
 
@@ -42,6 +43,71 @@ namespace FSO.SimAntics.Utils
 
                                     if (wall.TopLeftPattern != 0) value += GetFloorPrice(wall.TopLeftPattern)/2;
                                     if (wall.TopLeftStyle != 0) value += GetFloorPrice(wall.TopLeftStyle)/2;
+
+                                    if (wall.BottomLeftPattern != 0) value += GetPatternPrice(wall.BottomLeftPattern);
+                                    if (wall.BottomRightPattern != 0) value += GetPatternPrice(wall.BottomRightPattern);
+                                }
+                                else
+                                {
+                                    if ((wall.Segments & WallSegments.TopLeft) > 0)
+                                    {
+                                        value += GetWallPrice(wall.TopLeftStyle);
+                                        value += GetPatternPrice(wall.TopLeftPattern);
+                                        var wall2 = walls[index - 1];
+                                        value += GetPatternPrice(wall2.BottomRightPattern);
+                                    }
+                                    if ((wall.Segments & WallSegments.TopRight) > 0)
+                                    {
+                                        value += GetWallPrice(wall.TopRightStyle);
+                                        value += GetPatternPrice(wall.TopRightPattern);
+                                        var wall2 = walls[index - arch.Width];
+                                        value += GetPatternPrice(wall2.BottomLeftPattern);
+                                    }
+                                }
+                            }
+                        }
+                        index++;
+                    }
+                }
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// Overload for use without a live VM (e.g. during eviction IFF processing).
+        /// </summary>
+        public static int GetArchValue(VMArchitectureMarshal arch)
+        {
+            Floors = Content.Content.Get().WorldFloors;
+            Walls = Content.Content.Get().WorldWalls;
+
+            int value = 0;
+            for (int level = 0; level < arch.Stories; level++)
+            {
+                var walls = arch.Walls[level];
+                var floors = arch.Floors[level];
+                int index = 0;
+                for (int y = 0; y < arch.Height; y++)
+                {
+                    for (int x = 0; x < arch.Width; x++)
+                    {
+                        if (arch.FineBuildableArea != null && arch.FineBuildableArea[index])
+                        {
+                            var floor = floors[index];
+                            var wall = walls[index];
+
+                            if (floor.Pattern > 0)
+                            {
+                                value += GetFloorPrice(floor.Pattern);
+                            }
+                            if (wall.Segments > 0)
+                            {
+                                if ((wall.Segments & WallSegments.AnyDiag) > 0)
+                                {
+                                    value += GetWallPrice(wall.TopRightStyle);
+
+                                    if (wall.TopLeftPattern != 0) value += GetFloorPrice(wall.TopLeftPattern) / 2;
+                                    if (wall.TopLeftStyle != 0) value += GetFloorPrice(wall.TopLeftStyle) / 2;
 
                                     if (wall.BottomLeftPattern != 0) value += GetPatternPrice(wall.BottomLeftPattern);
                                     if (wall.BottomRightPattern != 0) value += GetPatternPrice(wall.BottomRightPattern);

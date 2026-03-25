@@ -48,6 +48,18 @@ namespace FSO.SimAntics.NetPlay.Model.Commands
                     using (var read = new BinaryReader(new MemoryStream(fsov.Data)))
                         marshal.Deserialize(read);
                     vm.Load(marshal);
+
+                    // Spawn any controller objects missing from the FSOV.
+                    // Controllers are preserved in evicted-lot FSoVs with their ObjectData
+                    // intact (so EP2 can re-initialise them correctly), but any that are
+                    // absent for any reason get freshly spawned here as a fallback.
+                    var content = FSO.Content.Content.Get();
+                    foreach (var controller in content.WorldObjects.ControllerObjects)
+                    {
+                        var guid = (uint)controller.ID;
+                        if (!vm.Entities.Any(e => e.Object.OBJ.GUID == guid))
+                            vm.Context.CreateObjectInstance(guid, LotTilePos.OUT_OF_WORLD, Direction.NORTH);
+                    }
                 }
                 else
                 {
@@ -63,6 +75,7 @@ namespace FSO.SimAntics.NetPlay.Model.Commands
                     nobj.ExecuteEntryPoint(2, vm.Context, true);
                 }
 
+                vm.UpdateFreeObjectID(); // ensure ObjectId is valid (can become 0 if an entity with ID 0 was deleted during Load EP)
                 vm.TS1State.VerifyFamily(vm);
             }
             else

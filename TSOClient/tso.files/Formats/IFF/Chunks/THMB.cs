@@ -22,5 +22,18 @@ namespace FSO.Files.Formats.IFF.Chunks
                 AddYOff = io.ReadInt32();
             }
         }
+
+        public override bool Write(IffFile iff, Stream stream)
+        {
+            using (var io = IoWriter.FromStream(stream, ByteOrder.LITTLE_ENDIAN))
+            {
+                io.WriteInt32(Width);
+                io.WriteInt32(Height);
+                io.WriteInt32(BaseYOff);
+                io.WriteInt32(XOff);
+                io.WriteInt32(AddYOff);
+            }
+            return true;
+        }
     }
 }
