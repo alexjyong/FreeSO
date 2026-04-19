@@ -62,7 +62,7 @@ namespace FSO.Content.Interfaces
                 }
 
                 resource = ProcessedFiles.GetOrAdd(reference.FileName, GenerateResource(reference));
-                if (resource.MainIff == null) return null;
+                if (resource == null || resource.MainIff == null) return null;
                 foreach (var objd in resource.MainIff.List<OBJD>())
                 {
                     if (objd.GUID == id)

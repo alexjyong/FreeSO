@@ -157,43 +157,64 @@ namespace FSO.Content.TS1
             }
             foreach (var file in matchedFiles)
             {
-                //load associated HIT, HSM
-                var cFile = Path.Combine(ContentManager.TS1BasePath, file);
-                var bPath = cFile.Substring(0, cFile.Length - 4); //path without .hot extension
-
-                var hsm = new HSM(PathCaseTools.Insensitive(bPath + ".hsm"));
-                var hit = new HITFile(PathCaseTools.Insensitive(bPath + ".hit"));
-                var hot = new Hot(cFile, hsm);
-
-                var group = new HITResourceGroup() { hsm = hsm, hit = hit, hot = hot };
-
-                foreach (var trk in hot.Tracks)
+                try
                 {
-                    if (TracksById.ContainsKey(trk.Key) && TracksById[trk.Key].SubroutineID != trk.Value.SubroutineID) { }
-                    TracksById[trk.Key] = trk.Value;
-                }
+                    //load associated HIT, HSM
+                    var cFile = Path.Combine(ContentManager.TS1BasePath, file);
+                    var bPath = cFile.Substring(0, cFile.Length - 4); //path without .hot extension
 
-                foreach (var patch in hot.Patches)
-                {
-                    if (PatchesById.ContainsKey(patch.Key) && patch.Value.Filename != PatchesById[patch.Key].Filename) { }
-                    PatchesById[patch.Key] = patch.Value;
-                }
+                    var hsmPath = PathCaseTools.Insensitive(bPath + ".hsm");
+                    var hitPath = PathCaseTools.Insensitive(bPath + ".hit");
 
-                foreach (var hls in hot.Hitlists)
-                {
-                    if (HitlistsById.ContainsKey(hls.Key) && HitlistsById[hls.Key].IDs.Count != hls.Value.IDs.Count) { }
-                    HitlistsById[hls.Key] = hls.Value;
-                }
+                    // Skip .hot files that are missing their .hsm companion — incomplete sound sets
+                    // (common with TSO-converted content dumped into Downloads/)
+                    if (hsmPath == null)
+                        continue;
 
-                foreach (var evt in hot.Events)
-                {
-                    _Events[evt.Key] = new HITEventRegistration()
+                    var hsm = new HSM(hsmPath);
+                    var hit = hitPath != null ? new HITFile(hitPath) : null;
+                    var hot = new Hot(cFile, hsm);
+
+                    var group = new HITResourceGroup() { hsm = hsm, hit = hit, hot = hot };
+
+                    foreach (var trk in hot.Tracks)
                     {
-                        Name = evt.Value.Name,
-                        EventType = (FSO.Files.HIT.HITEvents)evt.Value.EventType,
-                        TrackID = evt.Value.TrackID,
-                        ResGroup = group
-                    };
+                        if (TracksById.ContainsKey(trk.Key) && TracksById[trk.Key].SubroutineID != trk.Value.SubroutineID) { }
+                        TracksById[trk.Key] = trk.Value;
+                    }
+
+                    foreach (var patch in hot.Patches)
+                    {
+                        if (PatchesById.ContainsKey(patch.Key) && patch.Value.Filename != PatchesById[patch.Key].Filename) { }
+                        PatchesById[patch.Key] = patch.Value;
+                    }
+
+                    foreach (var hls in hot.Hitlists)
+                    {
+                        if (HitlistsById.ContainsKey(hls.Key) && HitlistsById[hls.Key].IDs.Count != hls.Value.IDs.Count) { }
+                        HitlistsById[hls.Key] = hls.Value;
+                    }
+
+                    foreach (var evt in hot.Events)
+                    {
+                        _Events[evt.Key] = new HITEventRegistration()
+                        {
+                            Name = evt.Value.Name,
+                            EventType = (FSO.Files.HIT.HITEvents)evt.Value.EventType,
+                            TrackID = evt.Value.TrackID,
+                            ResGroup = group
+                        };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Malformed sound file — log it and keep loading
+                    Content.FailedContentFiles.Add(new TS1BCFProvider.FailedFileInfo
+                    {
+                        Filename = file ?? "(unknown)",
+                        ErrorMessage = $"Failed to load sound file: {ex.Message}",
+                        ErrorType = "MalformedSound"
+                    });
                 }
             }
             var musics = Events.Where(x => x.Value.EventType == HITEvents.kSetMusicMode).Select(x => x.Key + ": " + x.Value.TrackID).ToList();

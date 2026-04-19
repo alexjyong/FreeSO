@@ -13,9 +13,9 @@ namespace FSO.Content.Framework
         private Content Manager;
         private Dictionary<string, string[]> BareFoldersByExtension = new Dictionary<string, string[]>()
         {
-            { ".bmp", new string[] { "GameData/Skins/", "ExpansionShared/SkinsBuy/" } },
-            { ".cmx", new string[] { "GameData/Skins/", "ExpansionShared/SkinsBuy/", "Downloads/" } }, // downloads for animations
-            { ".skn", new string[] { "GameData/Skins/", "ExpansionShared/SkinsBuy/" } },
+            { ".bmp", new string[] { "GameData/Skins/", "ExpansionShared/SkinsBuy/", "ExpansionPack[0-9]+/Skins/" } },
+            { ".cmx", new string[] { "GameData/Skins/", "ExpansionShared/SkinsBuy/", "Downloads/", "ExpansionPack[0-9]+/Skins/" } }, // downloads for animations
+            { ".skn", new string[] { "GameData/Skins/", "ExpansionShared/SkinsBuy/", "ExpansionPack[0-9]+/Skins/" } },
             { ".iff", new string[] { "Downloads/" } },
 
             { ".bcf", new string[] { "Downloads/" } }, //for animations
@@ -50,7 +50,7 @@ namespace FSO.Content.Framework
                 foreach (var folder in folders)
                 {
                     var test = Manager.TS1AllFiles;
-                    var regexStr = folder + ".*\\" + ext;
+                    var regexStr = folder + ".*\\" + ext + "$";
                     FileProvider<object> provider;
                     if (!FileProvidersByRegex.TryGetValue(regexStr, out provider))
                     {
@@ -63,12 +63,16 @@ namespace FSO.Content.Framework
                     var entries2 = provider.List();
                     foreach (var entry in entries2)
                     {
-                        result[entry.ToString()] = entry;
+                        var key = entry.ToString();
+                        result[key] = entry;
                     }
                 }
             }
 
-            if (entries == null) return result;
+            if (entries == null)
+            {
+                return result;
+            }
             foreach (var entry in entries)
             {
                 var name = Path.GetFileName(entry.FarEntry.Filename.ToLowerInvariant().Replace('\\', '/'));
@@ -131,7 +135,19 @@ namespace FSO.Content.Framework
             for (int i=1; i<Extensions.Length; i++)
             {
                 var ents = BaseProvider.BuildDictionary(Extensions[i], "globals");
-                foreach (var item in ents) Entries.Add(item.Key, item.Value);
+                foreach (var item in ents)
+                {
+                    if (Entries.ContainsKey(item.Key))
+                    {
+                        Content.FailedContentFiles.Add(new FSO.Content.TS1.TS1BCFProvider.FailedFileInfo
+                        {
+                            Filename = item.Key,
+                            ErrorMessage = "Duplicate content entry found while merging extension '" + Extensions[i] + "'. The later entry was kept; the earlier one was discarded.",
+                            ErrorType = "DuplicateKey"
+                        });
+                    }
+                    Entries[item.Key] = item.Value;
+                }
             }
         }
 

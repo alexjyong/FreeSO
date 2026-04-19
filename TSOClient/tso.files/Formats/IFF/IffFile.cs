@@ -361,7 +361,17 @@ namespace FSO.Files.Formats.IFF
                 var result = new List<T>();
                 foreach (var item in ByChunkType[typeofT])
                 {
-                    result.Add(this.prepare<T>(item));
+                    try
+                    {
+                        result.Add(this.prepare<T>(item));
+                    }
+                    catch (Exception ex)
+                    {
+                        var chunk = item as IffChunk;
+                        System.Diagnostics.Debug.WriteLine(
+                            $"[IffFile] Skipping malformed {typeofT.Name} chunk " +
+                            $"(ID: {chunk?.ChunkID}, Label: '{chunk?.ChunkLabel}') in '{Filename}': {ex.Message}");
+                    }
                 }
                 return result;
             }

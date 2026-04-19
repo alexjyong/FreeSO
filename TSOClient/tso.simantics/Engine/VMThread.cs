@@ -526,6 +526,12 @@ namespace FSO.SimAntics.Engine
             if (opcode >= 8192)
             {
                 // Semi-Global sub-routine call
+                if (frame.ScopeResource.SemiGlobal == null)
+                {
+                    // Missing semiglobal — TSO-converted objects may reference semiglobals that don't exist in TS1.
+                    Pop(VMPrimitiveExitCode.ERROR);
+                    return VMPrimitiveExitCode.CONTINUE;
+                }
                 bhav = (VMRoutine)frame.ScopeResource.SemiGlobal.GetRoutine(opcode);
             }
             else if (opcode >= 4096)

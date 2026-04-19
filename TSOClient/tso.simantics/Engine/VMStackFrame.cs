@@ -157,7 +157,7 @@ namespace FSO.SimAntics.Engine
             CodeOwner = FSO.Content.Content.Get().WorldObjects.Get(input.CodeOwnerGUID);
 
             Routine = null;
-            if (input.RoutineID >= 8192) Routine = (VMRoutine)ScopeResource.SemiGlobal.GetRoutine(input.RoutineID);
+            if (input.RoutineID >= 8192) Routine = ScopeResource.SemiGlobal != null ? (VMRoutine)ScopeResource.SemiGlobal.GetRoutine(input.RoutineID) : null;
             else if (input.RoutineID >= 4096) Routine = (VMRoutine)ScopeResource.GetRoutine(input.RoutineID);
             else Routine = (VMRoutine)Global.Resource.GetRoutine(input.RoutineID);
 

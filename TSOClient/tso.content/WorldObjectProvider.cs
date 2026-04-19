@@ -323,7 +323,19 @@ namespace FSO.Content
                 {
 
                 }
-                if (sg != null) SemiGlobal = sg.Resource; //used for tuning constant fetching.
+                if (sg != null)
+                {
+                    SemiGlobal = sg.Resource; //used for tuning constant fetching.
+                }
+                else
+                {
+                    Content.FailedContentFiles.Add(new FSO.Content.TS1.TS1BCFProvider.FailedFileInfo
+                    {
+                        Filename = iname ?? iff.Filename ?? "(unknown)",
+                        ErrorMessage = "Object references semiglobal '" + GLOBChunks[0].Name + "' which could not be found. Some interactions on this object may not work.",
+                        ErrorType = "MissingSemiGlobal"
+                    });
+                }
             }
 
             Recache();

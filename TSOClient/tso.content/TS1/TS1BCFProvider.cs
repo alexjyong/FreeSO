@@ -59,6 +59,7 @@ namespace FSO.Content.TS1
             {
                 try
                 {
+                    var bcfName = bcf.ToString();
                     var file = (BCF)bcf.GetThrowawayGeneric();
                     if (file == null)
                     {
@@ -131,19 +132,35 @@ namespace FSO.Content.TS1
                     });
                 }
             }
-            
+
             foreach (var item in SkinHostBCF.Keys)
             {
-                if (char.IsDigit(item[1]) && char.IsDigit(item[2]) && char.IsDigit(item[3])) {
+                // TS1 accepts any 3-char ID at positions 1-3 (digits or letters).
+                if (item.Length > 4) {
                     var uindex = item.IndexOf('_');
                     if (uindex == -1) uindex = item.Length;
+                    if (uindex <= 4) continue;
                     var type = item.Substring(4, uindex - 4);
                     if (type.EndsWith("lgt") || type.EndsWith("med") || type.EndsWith("drk")) type = type.Substring(0, type.Length - 3);
+                    if (type.Length == 0) continue;
                     AddItem(item[0].ToString(), type, item);
+                    // TS1 treats 'u' prefix as unisex — register under both male and female variants.
+                    if (type.Length >= 1 && type[0] == 'u')
+                    {
+                        var maleType = "m" + type.Substring(1);
+                        var femaleType = "f" + type.Substring(1);
+                        AddItem(item[0].ToString(), maleType, item);
+                        AddItem(item[0].ToString(), femaleType, item);
+                    }
                     if ((item[0] == 'b') && (type.EndsWith("fat") || type.EndsWith("fit") || type.EndsWith("skn")))
                     {
                         type = type.Substring(0, type.Length - 3);
                         AddItem(item[0].ToString(), type, item);
+                        if (type.Length >= 1 && type[0] == 'u')
+                        {
+                            AddItem(item[0].ToString(), "m" + type.Substring(1), item);
+                            AddItem(item[0].ToString(), "f" + type.Substring(1), item);
+                        }
                     }
                 }
             }

@@ -100,6 +100,18 @@ namespace FSO.Content.TS1
                                 //todo: room sort
                                 var cat = (sbyte)Math.Log(obj.FunctionFlags, 2);
                                 if (obj.FunctionFlags == 0) cat = (sbyte)(obj.BuildModeType+7);
+                                // Read CTSS catalog name while IFF is already open (free)
+                                string catalogName = null;
+                                if (obj.CatalogStringsID != 0)
+                                {
+                                    try
+                                    {
+                                        var ctss = file.Get<CTSS>(obj.CatalogStringsID);
+                                        catalogName = ctss?.GetString(0);
+                                    }
+                                    catch { }
+                                }
+
                                 var item = new ObjectCatalogItem()
                                 {
                                     Category = (sbyte)(cat), //0-7 buy categories. 8-15 build mode categories
@@ -108,6 +120,7 @@ namespace FSO.Content.TS1
                                     DisableLevel = 0,
                                     Price = obj.Price,
                                     Name = obj.ChunkLabel,
+                                    CatalogName = catalogName ?? obj.ChunkLabel,
 
                                     Subsort = (byte)obj.FunctionSubsort,
                                     CommunitySort = (byte)obj.CommunitySubsort,
@@ -173,7 +186,20 @@ namespace FSO.Content.TS1
                     iff.RuntimeInfo.UseCase = IffUseCase.Object;
                 }
 
-                return new GameObjectResource(iff, null, null, reference.FileName, ContentManager);
+                try
+                {
+                    return new GameObjectResource(iff, null, null, reference.FileName, ContentManager);
+                }
+                catch (Exception ex)
+                {
+                    Content.FailedContentFiles.Add(new TS1BCFProvider.FailedFileInfo
+                    {
+                        Filename = reference.FileName ?? "(unknown)",
+                        ErrorMessage = $"Failed to load object resource: {ex.Message}",
+                        ErrorType = "MalformedIFF"
+                    });
+                    return null;
+                }
             };
         }
 
