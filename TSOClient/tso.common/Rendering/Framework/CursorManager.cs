@@ -45,6 +45,7 @@ namespace FSO.Common.Rendering.Framework
         MoveIn,
         Bulldoze,
         NoDrop,
+        Rezone, //(Unleashed)
     }
 
     /// <summary>
