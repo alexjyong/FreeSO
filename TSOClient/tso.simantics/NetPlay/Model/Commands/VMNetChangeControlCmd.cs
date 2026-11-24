@@ -30,7 +30,8 @@ namespace FSO.SimAntics.NetPlay.Model.Commands
             vm.Context.ObjectQueries.RegisterAvatarPersist((VMAvatar)target, target.PersistID);
             vm.SetGlobalValue(3, target.ObjectID);
 
-            if (VM.UseWorld)
+            //a Sim away at school or work has no place on the lot: you can still control them, but there is nothing to centre on
+            if (VM.UseWorld && target.Position != FSO.LotView.Model.LotTilePos.OUT_OF_WORLD)
             {
                 vm.Context.World.CenterTo(target.WorldUI);
             }
