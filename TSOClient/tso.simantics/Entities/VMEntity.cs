@@ -943,9 +943,10 @@ namespace FSO.SimAntics
 
             caller.ObjectData[(int)VMStackObjectVariable.HideInteraction] = 0;
             var actionStrings = caller.Thread.CheckAction(action);
-            if ((caller.ObjectData[(int)VMStackObjectVariable.Hidden] == 1 ||
-                caller.ObjectData[(int)VMStackObjectVariable.HideInteraction] == 1 ||
-                caller.Position == LotTilePos.OUT_OF_WORLD) && !includeHidden) return null;
+            //TS1 lets you queue actions for a Sim who is away at school or work, to do when they get home
+            if ((caller.ObjectData[(int)VMStackObjectVariable.HideInteraction] == 1 ||
+                (!(vm.TS1 && caller.Position == LotTilePos.OUT_OF_WORLD) && (caller.ObjectData[(int)VMStackObjectVariable.Hidden] == 1 ||
+                caller.Position == LotTilePos.OUT_OF_WORLD))) && !includeHidden) return null;
 
             if (actionStrings != null)
             {
@@ -1005,9 +1006,9 @@ namespace FSO.SimAntics
 
                 caller.ObjectData[(int)VMStackObjectVariable.HideInteraction] = 0;
                 var actionStrings = caller.Thread.CheckAction(action);
-                if ((caller.ObjectData[(int)VMStackObjectVariable.Hidden] == 1 ||
-                    caller.ObjectData[(int)VMStackObjectVariable.HideInteraction] == 1 ||
-                    caller.Position == LotTilePos.OUT_OF_WORLD) && !includeHidden) continue;
+                if ((caller.ObjectData[(int)VMStackObjectVariable.HideInteraction] == 1 ||
+                    (!(vm.TS1 && caller.Position == LotTilePos.OUT_OF_WORLD) && (caller.ObjectData[(int)VMStackObjectVariable.Hidden] == 1 ||
+                    caller.Position == LotTilePos.OUT_OF_WORLD))) && !includeHidden) continue;
 
                 if (actionStrings != null)
                 {
